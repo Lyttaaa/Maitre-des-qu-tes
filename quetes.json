@@ -6,7 +6,7 @@
             "type": "reaction",
             "details_mp": "Fais une offrande à l’un des cinq autels divins en réagissant avec l’émoji correspondant.",
             "action": "offrande",
-            "emoji": 🍃🌰🍄🍂🔥🔨🔧🧱💨🎐🌬️💫⚰️🕸️🖤🗝️❄️🧊🌙☁️,
+            "emoji": ["🍃", "🌰", "🍄", "🍂", "🧨", "🔨", "🔧", "🧱", "💨", "🎐", "🌬️", "💫", "⚰️", "🕸️", "🖤", "🗝️", "☃️", "🧊", "🌙", "☁️"],
             "reponse_attendue": null,
             "recompense": 2
         },
@@ -16,7 +16,7 @@
             "type": "reaction",
             "details_mp": "Réagis à l’un des autels avec l’émoji de prière pour recevoir ta bénédiction du jour.",
             "action": "priere",
-            "emoji": 🌿🔥🌪️🌑❄️,
+            "emoji": ["🌿", "🔥", "🌪️", "🌑", "❄️"],
             "reponse_attendue": null,
             "recompense": 2
         }
