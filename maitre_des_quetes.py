@@ -147,6 +147,37 @@ class VueAcceptation(View):
         except discord.Forbidden:
             await interaction.response.send_message("Je n'arrive pas à t'envoyer de MP !", ephemeral=True)
 
+# ... tes imports + fonctions existantes ...
+
+def get_quete_non_postee(categorie, quetes_possibles):
+    fichier_rotation = "rotation_quetes.json"
+
+    # Créer le fichier s’il n’existe pas encore
+    if not os.path.exists(fichier_rotation):
+        with open(fichier_rotation, "w", encoding="utf-8") as f:
+            json.dump({}, f)
+
+    # Charger les données
+    with open(fichier_rotation, "r", encoding="utf-8") as f:
+        rotation_data = json.load(f)
+
+    deja_postees = rotation_data.get(categorie, [])
+    restantes = [q for q in quetes_possibles if q["id"] not in deja_postees]
+
+    # Si tout a été posté, on reset la rotation
+    if not restantes:
+        rotation_data[categorie] = []
+        restantes = quetes_possibles
+
+    quete = choice(restantes)
+    rotation_data.setdefault(categorie, []).append(quete["id"])
+
+    # Sauvegarde
+    with open(fichier_rotation, "w", encoding="utf-8") as f:
+        json.dump(rotation_data, f, indent=2, ensure_ascii=False)
+
+    return quete
+    
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def poster_quetes(ctx):
@@ -322,12 +353,6 @@ async def quetes_terminees(ctx):
     id_to_nom = {q["nom"]: f"{q['id']} – {q['nom']}" for q in toutes_quetes}
     liste = "\n".join(f"• {id_to_nom.get(q, q)}" for q in quetes)
     await ctx.send(f"🏅 **Quêtes terminées par {ctx.author.mention}** :\n{liste}")
-
-# Le reste du code reste inchangé et fonctionnera avec ce nouveau système
-# Poster les quêtes, validation par réaction, on_message, commandes etc.
-
-# Pense à adapter les autres parties du bot si tu veux intégrer les Quêtes Énigmes dans `poster_quetes()` par exemple
-# Et à bien ajouter ces quêtes dans ton fichier quetes.json pour les tester
 
 # 🚀 Lancement du bot
 bot.run(os.getenv("DISCORD_TOKEN"))
