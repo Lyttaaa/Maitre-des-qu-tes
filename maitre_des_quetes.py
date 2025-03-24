@@ -101,7 +101,7 @@ class VueAcceptation(View):
             {"_id": user_id},
             {
                 "$addToSet": {"quetes": quete_id},
-                "$setOnInsert": {"pseudo": interaction.user.name}
+                "$set": {"pseudo": interaction.user.name}
             },
             upsert=True
         )
