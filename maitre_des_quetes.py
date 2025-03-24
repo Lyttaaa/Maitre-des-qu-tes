@@ -58,7 +58,7 @@ def charger_quetes():
 async def envoyer_quete(channel, quete, categorie):
     emoji = EMOJI_PAR_CATEGORIE.get(categorie, "❓")
     couleur_embed = COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
-    titre = f"{emoji} {categorie} – {quete['id']} {quete['nom']}"
+    titre = f"{emoji} {categorie}\n– {quete['id']} {quete['nom']}"
 
     embed = discord.Embed(
         title=titre,
@@ -110,7 +110,7 @@ class VueAcceptation(View):
         if self.categorie == "Quêtes Énigmes":
             embed = discord.Embed(
                 title="🧩 Quête Énigmes",
-                description=f"**{self.quete['nom']}**",
+                description=f"**{self.quete['id']} – {self.quete['nom']}**",
                 color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
             )
             embed.add_field(name="💬 Énoncé", value=self.quete["enonce"], inline=False)
@@ -121,9 +121,12 @@ class VueAcceptation(View):
             )
             embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
         else:
+            titre_embed = f"{EMOJI_PAR_CATEGORIE.get(self.categorie, '📜')} {self.categorie}"
+            nom_quete = f"**{self.quete['id']} – {self.quete['nom']}**"
+
             embed = discord.Embed(
-                title=f"{EMOJI_PAR_CATEGORIE.get(self.categorie, '📜')} Quête {self.categorie.replace('Quêtes ', '')}",
-                description=f"**{self.quete['nom']}**",
+                title=titre_embed,
+                description=nom_quete,
                 color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
             )
             embed.add_field(name="💬 Description", value=self.quete["description"], inline=False)
