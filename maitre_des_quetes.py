@@ -100,7 +100,7 @@ class VueAcceptation(View):
         accepted_collection.update_one(
             {"_id": user_id},
             {
-                "$addToSet": {"quetes": quete_id},
+                "$addToSet": {"quetes": self.quete["id"]},
                 "$set": {"pseudo": interaction.user.name}
             },
             upsert=True
