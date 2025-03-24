@@ -58,7 +58,7 @@ def charger_quetes():
 async def envoyer_quete(channel, quete, categorie):
     emoji = EMOJI_PAR_CATEGORIE.get(categorie, "❓")
     couleur_embed = COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
-    titre = f"{emoji} {quete['id']} – {quete['nom']}"
+    titre = f"{emoji} {categorie} {quete['id']} – {quete['nom']}"
 
     embed = discord.Embed(
         title=titre,
