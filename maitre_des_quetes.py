@@ -175,9 +175,13 @@ async def on_raw_reaction_add(payload):
         if emoji in liste_emojis:
             accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["nom"]}})
             completed_collection.update_one(
-                {"_id": user_id}, {"$addToSet": {"quetes": quete["nom"]}}, upsert=True
+                {"_id": user_id},
+                {
+                    "$addToSet": {"quetes": quete["nom"]},
+                    "$set": {"pseudo": user.name}
+                },
+                upsert=True
             )
-
             user = payload.member
             utilisateurs.update_one(
                 {"_id": user_id},
@@ -215,9 +219,13 @@ async def on_message(message):
             if normaliser(contenu) == bonne_reponse:
                 accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["nom"]}})
                 completed_collection.update_one(
-                    {"_id": user_id}, {"$addToSet": {"quetes": quete["nom"]}}, upsert=True
-                )
-
+                {"_id": user_id},
+                {
+                    "$addToSet": {"quetes": quete["nom"]},
+                    "$set": {"pseudo": user.name}
+                },
+                upsert=True
+            )
                 utilisateurs.update_one(
                     {"_id": user_id},
                     {"$inc": {"lumes": quete["recompense"]}, "$setOnInsert": {"pseudo": message.author.name, "derniere_offrande": {}, "roles_temporaires": {}}},
