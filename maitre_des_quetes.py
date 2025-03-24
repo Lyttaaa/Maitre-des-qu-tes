@@ -107,14 +107,28 @@ class VueAcceptation(View):
         )
 
         # Création de l'embed personnalisé
-        embed = discord.Embed(
-            title=f"{EMOJI_PAR_CATEGORIE.get(self.categorie, '📜')} Quête {self.categorie.replace('Quêtes ', '')}",
-            description=f"**{self.quete['nom']}**",
-            color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
-        )
-        embed.add_field(name="💬 Description", value=self.quete["resume"], inline=False)
-        embed.add_field(name="👉 Objectif", value=self.quete["details_mp"], inline=False)
-        embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
+        if self.categorie == "Quêtes Énigmes":
+            embed = discord.Embed(
+                title="🧩 Quête Énigmes",
+                description=f"**{self.quete['nom']}**",
+                color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
+            )
+            embed.add_field(name="💬 Énoncé", value=self.quete["resume"], inline=False)
+            embed.add_field(
+                name="👉 Objectif",
+                value="Trouve la réponse à cette énigme et réponds-moi quand tu as trouvé !",
+                inline=False
+            )
+            embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
+        else:
+            embed = discord.Embed(
+                title=f"{EMOJI_PAR_CATEGORIE.get(self.categorie, '📜')} Quête {self.categorie.replace('Quêtes ', '')}",
+                description=f"**{self.quete['nom']}**",
+                color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
+            )
+            embed.add_field(name="💬 Description", value=self.quete["resume"], inline=False)
+            embed.add_field(name="👉 Objectif", value=self.quete["details_mp"], inline=False)
+            embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
 
         try:
             await interaction.user.send(embed=embed)
