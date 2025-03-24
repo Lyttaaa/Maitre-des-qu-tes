@@ -4,7 +4,7 @@
       "nom": "Offrande du Jour 🎁",
       "resume": "Les divinités attendent ton hommage quotidien...",
       "type": "reaction",
-      "details_mp": "🌌 Une présence ancienne t’a confié une tâche…\n📜 Quête : Offrande du Jour 🎁\n\nLes divinités attendent ton hommage quotidien...\n👉 Détail : Fais une offrande à l’un des cinq autels divins en réagissant avec l’émoji correspondant.",
+      "details_mp": "TEST",
       "action": "offrande",
       "emoji": ["🍃", "🌰", "🍄", "🍂", "🧨", "🔨", "🔧", "🧱", "💨", "🎐", "🌬️", "💫", "⚰️", "🕸️", "🖤", "🗝️", "☃️", "🧊", "🌙", "☁️"],
       "reponse_attendue": null,
