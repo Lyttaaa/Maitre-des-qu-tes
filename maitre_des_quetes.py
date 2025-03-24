@@ -61,7 +61,7 @@ class VueAcceptation(View):
         self.quete_id = quete_id
         self.mp_message = mp_message
 
-        @discord.ui.button(label="Accepter 📥", style=discord.ButtonStyle.green)
+    @discord.ui.button(label="Accepter 📥", style=discord.ButtonStyle.green)
     async def accepter(self, interaction: discord.Interaction, button: discord.ui.Button):
         user_id = str(interaction.user.id)
         quete_id = self.quete_id
