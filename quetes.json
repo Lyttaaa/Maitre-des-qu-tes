@@ -1,6 +1,7 @@
 {
   "Quêtes Journalières": [
     {
+      "id": "Q001",
       "nom": "Offrande du Jour 🎁",
       "resume": "Les divinités attendent ton hommage quotidien...",
       "description": "Tôt ce matin, en passant près du vieux puits de Molgel, tu as trouvé une pierre couverte de mousse. Dessus, un symbole ancien pulsait faiblement. Un murmure t’a effleuré : « Le monde attend ton geste… ».",
@@ -12,6 +13,7 @@
       "recompense": 2
     },
     {
+      "id": "Q002",
       "nom": "Prière du Jour 🙏",
       "resume": "Cherche la bénédiction d’un Façonneur…",
       "description": "Alors que tu traversais la place sacrée, un souffle chaud a fait frissonner les bannières divines. Les statues semblaient vivantes… Un Façonneur t’appelle. Il attend que tu te tournes vers lui, ne serait-ce qu’un instant.",
@@ -25,7 +27,7 @@
   ],
   "Quêtes Simples": [
     {
-      "id": "Q001",
+      "id": "Q003",
       "nom": "La miche du matin 🥐",
       "resume": "Le boulanger local a besoin d’un coup de main…",
       "description": "Le boulanger de Molgel, toujours jovial, t’a lancé un clin d’œil entre deux fournées. « Hé, aventurier ! Tu m’donnes un coup de main ? » Sa miche du matin est en retard. Il t’attend, panié en main.",
@@ -39,7 +41,7 @@
       "recompense": 9
     },
     {
-      "id": "Q002",
+      "id": "Q004",
       "nom": "Voix des Anciens 🏛️",
       "resume": "Les Anciens murmurent à ceux qui savent écouter…",
       "description": "Assis sur le banc de pierre, tu as senti une brise étrange. Elle murmurait des mots oubliés. Les Rumeurs du Monde s'agitent… Les Anciens veulent être entendus, mais seuls ceux qui prêtent l’oreille peuvent les comprendre.",
@@ -51,7 +53,7 @@
       "recompense": 3
     },
     {
-      "id": "Q003",
+      "id": "Q005",
       "nom": "Omelette de Minuit 🍳",
       "resume": "L’Aubergiste a besoin d’ingrédients pour sa fameuse omelette champêtre.",
       "description": "L’Aubergiste t’a glissé un mot, entre deux pintes : « Mes champignons sont en retard, et j’ai une omelette à préparer avant minuit. Si tu les trouves… » Elle t’a adressé un clin d’œil complice. Tu sais ce qu’il te reste à faire.",
@@ -67,7 +69,7 @@
   ],
   "Quêtes de Recherche": [
     {
-      "id": "Q004",
+      "id": "Q006",
       "nom": "Savoir Oublié 📜",
       "resume": "Un érudit cherche le nom d’un artefact découvert à Giaard…",
       "description": "Dans une taverne isolée, un vieil érudit t’a parlé d’une fiole étrange, trouvée sur les côtes de Giaard. « Elle brillait d’un bleu profond, comme les abysses. On dit qu’un plongeur l’a vendue au marché… » Il t’a confié cette énigme. À toi de chercher son nom.",
@@ -78,7 +80,7 @@
       "recompense": 5
     },
     {
-      "id": "Q005",
+      "id": "Q007",
       "nom": "L’Objet de Trop 🏺",
       "resume": "Un collectionneur a acheté un artefact par erreur. Il veut que tu l’identifies.",
       "description": "Darghel, un collectionneur notoire, t’a tendu un objet dans un linge de soie. « Ce n’est pas à moi, ni à personne. C’est une erreur. Trouve son nom, et je saurai quoi en faire. » L’objet semble… chaud au toucher.",
@@ -89,7 +91,7 @@
       "recompense": 5
     },
     {
-      "id": "Q006",
+      "id": "Q008",
       "nom": "Remède Urgent 🩹",
       "resume": "Un herboriste cherche une potion qui soigne les pertes de mémoire.",
       "description": "Thalendrun, herboriste de la vieille école, t’a accueilli avec un regard inquiet. « Un client perd la mémoire… chaque jour un peu plus. Il me faut cette potion. Je sais qu’elle existe… » Dans ses grimoires, il n’a trouvé que le silence.",
@@ -102,7 +104,7 @@
   ],
   "Quêtes Énigmes": [
   {
-      "id": "Q007",
+      "id": "Q009",
       "nom": "Entrevue en forêt 🌲",
       "resume": "Un ancien texte évoque une race discrète vivant dans les sous-bois...",
       "enonce": "En forêt, tu as croisé une silhouette à demi dissimulée par la brume et la mousse. Une coiffe rouge, une cape en haillons, un sac à dos bien rempli, un bâton incrusté de spores. Il t’a regardé sans dire un mot… puis disparu.",
@@ -112,7 +114,7 @@
       "recompense": 4
     },
     {
-      "id": "Q008",
+      "id": "Q0010",
       "nom": "Souvenir d’un explorateur 🧭",
       "resume": "Un ancien texte évoque une race discrète vivant dans les sous-bois...",
       "enonce": "Au détour d’un campement abandonné, tu trouves un carnet. Les pages racontent des voyages insensés, des créatures bizarres, et toujours la signature au bas des pages : « J. le téméraire ».",
@@ -122,7 +124,7 @@
       "recompense": 4
     },
     {
-      "id": "Q009",
+      "id": "Q0011",
       "nom": "Évènement flamboyant 🔥",
       "resume": "Un ancien texte évoque une race discrète vivant dans les sous-bois...",
       "enonce": "Un parchemin roulé glissé dans ton sac sans que tu t’en rendes compte. Il sent la suie et la cendre. « Quand le feu embrasse la saison nouvelle, les lanternes dansent dans la nuit de Vaekirn… »",
@@ -132,7 +134,7 @@
       "recompense": 4
     },
     {
-      "id": "Q010",
+      "id": "Q012",
       "nom": "Puissants Dirigeants ✊",
       "resume": "Un ancien texte évoque une race discrète vivant dans les sous-bois...",
       "enonce": "Ils ne portent pas de couronnes, mais leur influence est partout. Un parchemin signé par eux a plus de poids que n’importe quel décret royal. Sept sièges. Sept voix. Chaque guilde, une puissance. Ensemble, ils façonnent les décisions dans l’ombre de la grande salle aux vitraux dorés.",
