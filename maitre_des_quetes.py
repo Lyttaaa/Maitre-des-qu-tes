@@ -183,46 +183,46 @@ async def on_raw_reaction_add(payload):
     toutes_quetes = [q for lst in quetes.values() for q in lst]
 
     for quete in toutes_quetes:
-    if quete.get("type") != "reaction":
+        if quete.get("type") != "reaction":
+            continue
+
+        # ✅ Vérifie que la quête a bien été acceptée
+        if quete["nom"] not in quetes_acceptees:
         continue
 
-    # ✅ Vérifie que la quête a bien été acceptée
-    if quete["nom"] not in quetes_acceptees:
-        continue
+        liste_emojis = quete.get("emoji", [])
+        if isinstance(liste_emojis, str):
+            liste_emojis = [liste_emojis]
 
-    liste_emojis = quete.get("emoji", [])
-    if isinstance(liste_emojis, str):
-        liste_emojis = [liste_emojis]
+        if emoji in liste_emojis:
+            accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["nom"]}})
+            completed_collection.update_one(
+                {"_id": user_id},
+                {
+                    "$addToSet": {"quetes": quete["nom"]},
+                    "$set": {"pseudo": user.name}  # ✅ Ajout pseudo ici
+                },
+                upsert=True
+            )
 
-    if emoji in liste_emojis:
-        accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["nom"]}})
-        completed_collection.update_one(
-            {"_id": user_id},
-            {
-                "$addToSet": {"quetes": quete["nom"]},
-                "$set": {"pseudo": user.name}  # ✅ Ajout pseudo ici
-            },
-            upsert=True
-        )
+            utilisateurs.update_one(
+                {"_id": user_id},
+                {
+                    "$inc": {"lumes": quete["recompense"]},
+                    "$setOnInsert": {
+                        "pseudo": user.name,
+                        "derniere_offrande": {},
+                        "roles_temporaires": {}
+                    }
+                },
+                upsert=True
+            )
 
-        utilisateurs.update_one(
-            {"_id": user_id},
-            {
-                "$inc": {"lumes": quete["recompense"]},
-                "$setOnInsert": {
-                    "pseudo": user.name,
-                    "derniere_offrande": {},
-                    "roles_temporaires": {}
-                }
-            },
-            upsert=True
-        )
-
-        try:
-            await user.send(f"✨ Tu as terminé la quête **{quete['nom']}** et gagné **{quete['recompense']} Lumes** !")
-        except discord.Forbidden:
-            await bot.get_channel(payload.channel_id).send(f"✅ {user.mention} a terminé la quête **{quete['nom']}** ! (MP non reçu)")
-        return
+            try:
+                await user.send(f"✨ Tu as terminé la quête **{quete['nom']}** et gagné **{quete['recompense']} Lumes** !")
+            except discord.Forbidden:
+                await bot.get_channel(payload.channel_id).send(f"✅ {user.mention} a terminé la quête **{quete['nom']}** ! (MP non reçu)")
+            return
 
 @bot.event
 async def on_message(message):
