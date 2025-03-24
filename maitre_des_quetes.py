@@ -5,12 +5,17 @@ import json
 import os
 from pymongo import MongoClient
 from random import choice
+import re
 import unicodedata
 
 def normaliser(texte):
     texte = texte.lower().strip()
     texte = unicodedata.normalize("NFKD", texte)
     texte = ''.join(c for c in texte if not unicodedata.combining(c))
+    texte = texte.replace("’", "'")
+    texte = re.sub(r"[“”«»]", '"', texte)
+    texte = re.sub(r"\s+", " ", texte)
+    texte = texte.replace("\u200b", "")
     return texte
 
 # Configuration du bot
