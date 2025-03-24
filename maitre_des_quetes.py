@@ -158,24 +158,27 @@ async def poster_quetes(ctx):
         if message.author == bot.user:
             await message.delete()
 
-    # 🕘 Poster les 2 quêtes journalières
+    # 🕘 Poster les 2 quêtes journalières (pas de rotation pour celles-ci)
     for quete in quetes_par_type.get("Quêtes Journalières", [])[:2]:
         await envoyer_quete(channel, quete, "Quêtes Journalières")
 
-    # 📦 Poster une quête simple
+    # 📦 Quête simple avec rotation
     simples = quetes_par_type.get("Quêtes Simples", [])
     if simples:
-        await envoyer_quete(channel, choice(simples), "Quêtes Simples")
+        quete_simple = get_quete_non_postee("Quêtes Simples", simples)
+        await envoyer_quete(channel, quete_simple, "Quêtes Simples")
 
-    # 🔍 Poster une quête de recherche
+    # 🔍 Quête de recherche avec rotation
     recherches = quetes_par_type.get("Quêtes de Recherche", [])
     if recherches:
-        await envoyer_quete(channel, choice(recherches), "Quêtes de Recherche")
+        quete_recherche = get_quete_non_postee("Quêtes de Recherche", recherches)
+        await envoyer_quete(channel, quete_recherche, "Quêtes de Recherche")
 
-    # 🧩 Poster une quête énigme
+    # 🧩 Quête énigme avec rotation
     enigmes = quetes_par_type.get("Quêtes Énigmes", [])
     if enigmes:
-        await envoyer_quete(channel, choice(enigmes), "Quêtes Énigmes")
+        quete_enigme = get_quete_non_postee("Quêtes Énigmes", enigmes)
+        await envoyer_quete(channel, quete_enigme, "Quêtes Énigmes")
 
 @bot.event
 async def on_raw_reaction_add(payload):
