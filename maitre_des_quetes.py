@@ -58,7 +58,7 @@ def charger_quetes():
 async def envoyer_quete(channel, quete, categorie):
     emoji = EMOJI_PAR_CATEGORIE.get(categorie, "❓")
     couleur_embed = COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
-    titre = f"{emoji} {categorie} : {quete['nom']}"
+    titre = f"{emoji} {quete['id']} – {quete['nom']}"
 
     embed = discord.Embed(
         title=titre,
@@ -278,7 +278,9 @@ async def mes_quetes(ctx):
         return
 
     quetes = user_data["quetes"]
-    liste = "\n".join(f"• {q}" for q in quetes)
+    toutes_quetes = [q for lst in charger_quetes().values() for q in lst]
+    id_to_nom = {q["nom"]: f"{q['id']} – {q['nom']}" for q in toutes_quetes}
+    liste = "\n".join(f"• {id_to_nom.get(q, q)}" for q in quetes)
     await ctx.send(f"📜 **Quêtes en cours pour {ctx.author.mention}** :\n{liste}")
 
 @bot.command()
@@ -291,7 +293,9 @@ async def quetes_terminees(ctx):
         return
 
     quetes = user_data["quetes"]
-    liste = "\n".join(f"• {q}" for q in quetes)
+    toutes_quetes = [q for lst in charger_quetes().values() for q in lst]
+    id_to_nom = {q["nom"]: f"{q['id']} – {q['nom']}" for q in toutes_quetes}
+    liste = "\n".join(f"• {id_to_nom.get(q, q)}" for q in quetes)
     await ctx.send(f"🏅 **Quêtes terminées par {ctx.author.mention}** :\n{liste}")
 
 # Le reste du code reste inchangé et fonctionnera avec ce nouveau système
