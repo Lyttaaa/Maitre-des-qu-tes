@@ -66,25 +66,40 @@ class VueAcceptation(View):
         user_id = str(interaction.user.id)
         quete_id = self.quete_id
 
-        # Vérifie si la quête a déjà été acceptée
+        # Vérifie si déjà acceptée
         quete = accepted_collection.find_one({"_id": user_id})
         if quete and quete_id in quete.get("quetes", []):
             await interaction.response.send_message("Tu as déjà accepté cette quête !", ephemeral=True)
             return
 
-        # Vérifie si elle a déjà été complétée (et qu’elle n’est pas journalière)
+        # Vérifie si déjà terminée (sauf pour les journalières)
         deja_faite = completed_collection.find_one({"_id": user_id, "quetes": quete_id})
         if deja_faite:
-            # On recharge le fichier pour détecter si c’est une journalière
-            toutes_quetes = charger_quetes()
-            for type_nom, lst in toutes_quetes.items():
-                if any(q["nom"] == quete_id for q in lst):
-                    if type_nom != "Quêtes Journalières":
-                        await interaction.response.send_message(
-                            "Tu as déjà terminé cette quête. Elle ne peut être accomplie qu’une seule fois.",
-                            ephemeral=True
-                        )
-                        return
+            quetes_data = charger_quetes()
+            est_journaliere = any(
+                quete_id == q["nom"] for q in quetes_data.get("Quêtes Journalières", [])
+            )
+
+            if not est_journaliere:
+                await interaction.response.send_message(
+                    "Tu as déjà terminé cette quête. Elle ne peut être accomplie qu’une seule fois.",
+                    ephemeral=True
+                )
+                return
+
+        # Ajout en base
+        accepted_collection.update_one(
+            {"_id": user_id},
+            {"$addToSet": {"quetes": quete_id}},
+            upsert=True
+        )
+
+        try:
+            await interaction.user.send(f"📜 **Détails de la quête** :\n{self.mp_message}")
+            await interaction.response.send_message("Tu as accepté cette quête. Regarde tes MP !", ephemeral=True)
+        except discord.Forbidden:
+            await interaction.response.send_message("Je n'arrive pas à t'envoyer de MP !", ephemeral=True)
+
                     break
 
         # Ajoute la quête comme acceptée
