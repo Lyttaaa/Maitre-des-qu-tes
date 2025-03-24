@@ -18,7 +18,7 @@ db = client.lumharel_bot
 accepted_collection = db.quetes_acceptees
 
 # Channel cible pour poster les quêtes
-CHANNEL_ID = 135330000000000000  # Remplace par l'ID de ton channel #🎯tableau-des-quêtes
+CHANNEL_ID = 1352143818929078322  # Remplace par l'ID de ton channel #🎯tableau-des-quêtes
 
 # Chargement des quêtes depuis le fichier JSON
 def charger_quetes():
