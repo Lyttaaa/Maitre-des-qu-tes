@@ -18,18 +18,15 @@ mongo_uri = os.getenv("MONGO_URI")
 client = MongoClient(mongo_uri)
 db = client.lumharel_bot
 accepted_collection = db.quetes_acceptees
-completed_collection = db.quetes_terminees  # ✅ Ajout
+completed_collection = db.quetes_terminees
 utilisateurs = db.utilisateurs
 
-# ID du salon de quêtes
 CHANNEL_ID = 1352143818929078322
 
-# Chargement des quêtes
 def charger_quetes():
     with open("quetes.json", "r", encoding="utf-8") as f:
         return json.load(f)
 
-# Envoi d'une quête dans un embed avec bouton
 async def envoyer_quete(channel, quete, categorie):
     emoji = ""
     if isinstance(quete.get("emoji"), list):
@@ -43,11 +40,9 @@ async def envoyer_quete(channel, quete, categorie):
         color=0x4CAF50
     )
     embed.set_footer(text=categorie)
-
     view = VueAcceptation(quete["nom"], quete["details_mp"])
     await channel.send(embed=embed, view=view)
 
-# Vue avec bouton Accepter
 class VueAcceptation(View):
     def __init__(self, quete_id, mp_message):
         super().__init__(timeout=None)
@@ -70,17 +65,21 @@ class VueAcceptation(View):
         )
 
         try:
-            await interaction.user.send(f"📜 **Détails de la quête** :\n{self.mp_message}")
-            await interaction.response.send_message("Tu as accepté cette quête. Regarde tes MP !", ephemeral=True)
+            await interaction.user.send(f"📜 **Nouvelle quête reçue !**\n{self.mp_message}")
+            await interaction.response.send_message("Ta quête a été ajoutée ! Regarde tes MP. 📨", ephemeral=True)
         except discord.Forbidden:
             await interaction.response.send_message("Je n'arrive pas à t'envoyer de MP !", ephemeral=True)
 
-# 📌 Poster les quêtes (commande admin)
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def poster_quetes(ctx):
     quetes_par_type = charger_quetes()
     channel = bot.get_channel(CHANNEL_ID)
+
+    # 🔄 Supprimer les anciens messages du channel
+    async for message in channel.history(limit=100):
+        if message.author == bot.user:
+            await message.delete()
 
     for quete in quetes_par_type.get("Quêtes Journalières", []):
         await envoyer_quete(channel, quete, "Quêtes Journalières")
@@ -93,7 +92,6 @@ async def poster_quetes(ctx):
     if recherches:
         await envoyer_quete(channel, choice(recherches), "Quêtes de Recherche")
 
-# ✅ Validation des quêtes "reaction"
 @bot.event
 async def on_raw_reaction_add(payload):
     if payload.member is None or payload.member.bot:
@@ -107,14 +105,10 @@ async def on_raw_reaction_add(payload):
         return
 
     quetes_acceptees = user_data.get("quetes", [])
-    toutes_quetes = []
-    for lst in quetes.values():
-        toutes_quetes.extend(lst)
+    toutes_quetes = [q for lst in quetes.values() for q in lst]
 
     for quete in toutes_quetes:
-        if "type" not in quete or quete["type"] != "reaction":
-            continue
-        if quete["nom"] not in quetes_acceptees:
+        if quete.get("type") != "reaction" or quete["nom"] not in quetes_acceptees:
             continue
 
         liste_emojis = quete.get("emoji", [])
@@ -122,43 +116,24 @@ async def on_raw_reaction_add(payload):
             liste_emojis = [liste_emojis]
 
         if emoji in liste_emojis:
-            print(f"[✅ DEBUG] Validation par réaction — Quête : {quete['nom']} / Emoji : {emoji}")
-
             accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["nom"]}})
             completed_collection.update_one(
-                {"_id": user_id},
-                {"$addToSet": {"quetes": quete["nom"]}},
-                upsert=True
+                {"_id": user_id}, {"$addToSet": {"quetes": quete["nom"]}}, upsert=True
             )
 
             user = payload.member
-            profil = utilisateurs.find_one({"_id": user_id})
-            if not profil:
-                utilisateurs.insert_one({
-                    "_id": user_id,
-                    "pseudo": user.name,
-                    "lumes": quete["recompense"],
-                    "derniere_offrande": {},
-                    "roles_temporaires": {}
-                })
-            else:
-                utilisateurs.update_one(
-                    {"_id": user_id},
-                    {"$inc": {"lumes": quete["recompense"]}}
-                )
+            utilisateurs.update_one(
+                {"_id": user_id},
+                {"$inc": {"lumes": quete["recompense"]}, "$setOnInsert": {"pseudo": user.name, "derniere_offrande": {}, "roles_temporaires": {}}},
+                upsert=True
+            )
 
             try:
-                await user.send(
-                    f"✅ Tu as terminé la quête **{quete['nom']}** et gagné **{quete['recompense']} Lumes** !"
-                )
+                await user.send(f"✨ Tu as terminé la quête **{quete['nom']}** et gagné **{quete['recompense']} Lumes** !")
             except discord.Forbidden:
-                channel = bot.get_channel(payload.channel_id)
-                await channel.send(
-                    f"✅ {user.mention} a terminé la quête **{quete['nom']}** et gagné **{quete['recompense']} Lumes** ! (MP non reçu)"
-                )
+                await bot.get_channel(payload.channel_id).send(f"✅ {user.mention} a terminé la quête **{quete['nom']}** ! (MP non reçu)")
             return
 
-# 📬 Validation des quêtes texte (MP)
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -173,55 +148,32 @@ async def on_message(message):
             return
 
         quetes_acceptees = user_data.get("quetes", [])
-        toutes_quetes = []
-        for lst in quetes.values():
-            toutes_quetes.extend(lst)
+        toutes_quetes = [q for lst in quetes.values() for q in lst]
 
         for quete in toutes_quetes:
-            if "type" not in quete or quete["type"] != "texte":
-                continue
-            if quete["nom"] not in quetes_acceptees:
+            if quete.get("type") != "texte" or quete["nom"] not in quetes_acceptees:
                 continue
 
             bonne_reponse = quete.get("reponse_attendue", "").lower().strip()
-
             if contenu.lower() == bonne_reponse:
-                print(f"[✅ DEBUG] Validation texte — Quête : {quete['nom']} / Réponse : {contenu}")
-
-                accepted_collection.update_one(
-                    {"_id": user_id},
-                    {"$pull": {"quetes": quete["nom"]}}
-                )
+                accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["nom"]}})
                 completed_collection.update_one(
+                    {"_id": user_id}, {"$addToSet": {"quetes": quete["nom"]}}, upsert=True
+                )
+
+                utilisateurs.update_one(
                     {"_id": user_id},
-                    {"$addToSet": {"quetes": quete["nom"]}},
+                    {"$inc": {"lumes": quete["recompense"]}, "$setOnInsert": {"pseudo": message.author.name, "derniere_offrande": {}, "roles_temporaires": {}}},
                     upsert=True
                 )
 
-                profil = utilisateurs.find_one({"_id": user_id})
-                if not profil:
-                    utilisateurs.insert_one({
-                        "_id": user_id,
-                        "pseudo": message.author.name,
-                        "lumes": quete["recompense"],
-                        "derniere_offrande": {},
-                        "roles_temporaires": {}
-                    })
-                else:
-                    utilisateurs.update_one(
-                        {"_id": user_id},
-                        {"$inc": {"lumes": quete["recompense"]}}
-                    )
-
                 await message.channel.send(
-                    f"✅ Ta réponse est correcte ! Tu as complété la quête **{quete['nom']}** et gagné **{quete['recompense']} Lumes** !"
+                    f"✅ Parfait ! Tu as complété la quête **{quete['nom']}** et gagné **{quete['recompense']} Lumes** !"
                 )
                 return
 
     await bot.process_commands(message)
 
-
-# 📜 Commande : Voir ses quêtes en cours
 @bot.command()
 async def mes_quetes(ctx):
     user_id = str(ctx.author.id)
@@ -235,7 +187,6 @@ async def mes_quetes(ctx):
     liste = "\n".join(f"• {q}" for q in quetes)
     await ctx.send(f"📜 **Quêtes en cours pour {ctx.author.mention}** :\n{liste}")
 
-# 🏅 Commande : Voir ses quêtes terminées
 @bot.command()
 async def quetes_terminees(ctx):
     user_id = str(ctx.author.id)
@@ -249,5 +200,4 @@ async def quetes_terminees(ctx):
     liste = "\n".join(f"• {q}" for q in quetes)
     await ctx.send(f"🏅 **Quêtes terminées par {ctx.author.mention}** :\n{liste}")
 
-# 🚀 Lancement
 bot.run(os.getenv("DISCORD_TOKEN"))
