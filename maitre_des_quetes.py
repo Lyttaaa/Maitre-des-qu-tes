@@ -18,7 +18,7 @@ db = client.lumharel_bot
 accepted_collection = db.quetes_acceptees
 
 # Channel cible pour poster les quêtes
-CHANNEL_ID = 1352143818929078322  # Remplace par l'ID de ton channel #🎯tableau-des-quêtes
+CHANNEL_ID = 1352143818929078322  # ID de ton channel #🎯tableau-des-quêtes
 
 # Chargement des quêtes depuis le fichier JSON
 def charger_quetes():
@@ -62,8 +62,15 @@ async def poster_quetes(ctx):
 
     for categorie, quetes in quetes_par_type.items():
         for quete in quetes:
+            # Gestion des emojis (liste ou string)
+            emoji = ""
+            if isinstance(quete.get("emoji"), list):
+                emoji = ''.join(quete["emoji"])
+            elif isinstance(quete.get("emoji"), str):
+                emoji = quete["emoji"]
+
             embed = discord.Embed(
-                title=f"{quete['emoji'] + ' ' if quete.get('emoji') else ''}Quête — {quete['nom']}",
+                title=f"{emoji + ' ' if emoji else ''}Quête — {quete['nom']}",
                 description=quete["resume"],
                 color=0x4CAF50
             )
@@ -74,7 +81,6 @@ async def poster_quetes(ctx):
                 await channel.send(embed=embed, view=view)
             else:
                 await channel.send(embed=embed)
-
 
 # Lancement du bot
 bot.run(os.getenv("DISCORD_TOKEN"))
