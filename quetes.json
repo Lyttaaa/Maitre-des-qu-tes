@@ -85,5 +85,15 @@
       "reponse_attendue": "Philtre de l'Esprit",
       "recompense": 5
     }
+  ],
+  "Quêtes Énigmes": [
+  {
+      "nom": "L’Enigme des Myrvûls 🧠",
+      "resume": "Un ancien texte évoque une race discrète vivant dans les sous-bois...",
+      "type": "texte",
+      "details_mp": "On murmure leur nom au creux des fougères... Peux-tu retrouver comment on les appelle ?",
+      "reponse_attendue": "Myrvûls",
+      "recompense": 5
+    }
   ]
 }
