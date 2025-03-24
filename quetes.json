@@ -1,7 +1,7 @@
 {
   "Quêtes Journalières": [
     {
-      "nom": "Offrande du Jour",
+      "nom": "🎁 Offrande du Jour",
       "resume": "Les divinités attendent ton hommage quotidien...",
       "type": "reaction",
       "details_mp": "Fais une offrande à l’un des cinq autels divins en réagissant avec l’émoji correspondant.",
@@ -11,7 +11,7 @@
       "recompense": 2
     },
     {
-      "nom": "Prière du Jour",
+      "nom": "🙏 Prière du Jour",
       "resume": "Cherche la bénédiction d’un Façonneur…",
       "type": "reaction",
       "details_mp": "Réagis à l’un des autels avec l’émoji de prière pour recevoir ta bénédiction du jour.",
@@ -23,7 +23,7 @@
   ],
   "Quêtes Simples": [
     {
-      "nom": "La miche du matin",
+      "nom": "🥐 La miche du matin",
       "resume": "Le boulanger local a besoin d’un coup de main…",
       "type": "reaction",
       "details_mp": "Salue le boulanger sur le canal **grand-place** et réagis à son message avec 🥖 pour lui apporter ton aide !\n\nExemple de message : `Bonjour boulanger ! Voici votre miche.`",
@@ -45,7 +45,7 @@
       "recompense": 3
     },
     {
-      "nom": "Omelette de Minuit",
+      "nom": "🍳 Omelette de Minuit",
       "resume": "L’Aubergiste a besoin d’ingrédients pour sa fameuse omelette champêtre.",
       "type": "reaction",
       "details_mp": "Salue l’aubergiste au canal **comptoir** et indique-lui que tu as une livraison de champignons pour lui.\n\nExemple : `Salut Aubergiste, j’ai une livraison de champignons pour toi !`",
@@ -59,7 +59,7 @@
   ],
   "Quêtes de Recherche": [
     {
-      "nom": "Savoir Oublié",
+      "nom": "📜 Savoir Oublié",
       "resume": "Un érudit cherche le nom d’un artefact découvert à Giaard…",
       "type": "texte",
       "details_mp": "Selon la rumeur, une potion trouvée sur les côtes, aux reflets bleutés, a été achetée à un plongeur. Peux-tu retrouver son nom dans les archives ? (https://lumharel.fr/potions)",
@@ -68,7 +68,7 @@
       "recompense": 5
     },
     {
-      "nom": "L’Objet de Trop",
+      "nom": "🏺 L’Objet de Trop",
       "resume": "Un collectionneur a acheté un artefact par erreur. Il veut que tu l’identifies.",
       "type": "texte",
       "details_mp": "Le collectionneur Darghel a trouvé une fiole scellée contenant un liquide rouge profond. Elle dégage une chaleur étrange… Peux-tu retrouver son nom ? (https://lumharel.fr/artefacts)",
@@ -77,7 +77,7 @@
       "recompense": 6
     },
     {
-      "nom": "Remède Urgent",
+      "nom": "🩹 Remède Urgent",
       "resume": "Un herboriste cherche une potion qui soigne les pertes de mémoire.",
       "type": "texte",
       "details_mp": "Le guérisseur Thalendrun est débordé. Il cherche une potion violette contre les pertes de mémoire… Sauras-tu retrouver son nom dans les archives ? (https://lumharel.fr/potions)",
