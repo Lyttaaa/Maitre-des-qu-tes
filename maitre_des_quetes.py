@@ -180,8 +180,6 @@ async def on_raw_reaction_add(payload):
                 await bot.get_channel(payload.channel_id).send(f"✅ {user.mention} a terminé la quête **{quete['nom']}** ! (MP non reçu)")
             return
 
-# ... (le début de ton code reste identique)
-
 @bot.event
 async def on_message(message):
     if message.author.bot:
