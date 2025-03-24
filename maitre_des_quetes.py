@@ -154,6 +154,7 @@ async def on_raw_reaction_add(payload):
     if payload.member is None or payload.member.bot:
         return
 
+    user = payload.member  # ✅ DÉFINIR AVANT
     user_id = str(payload.user_id)
     emoji = str(payload.emoji)
     quetes = charger_quetes()
@@ -178,14 +179,21 @@ async def on_raw_reaction_add(payload):
                 {"_id": user_id},
                 {
                     "$addToSet": {"quetes": quete["nom"]},
-                    "$set": {"pseudo": user.name}
+                    "$set": {"pseudo": user.name}  # ✅ Ajout pseudo ici
                 },
                 upsert=True
             )
-            user = payload.member
+
             utilisateurs.update_one(
                 {"_id": user_id},
-                {"$inc": {"lumes": quete["recompense"]}, "$setOnInsert": {"pseudo": user.name, "derniere_offrande": {}, "roles_temporaires": {}}},
+                {
+                    "$inc": {"lumes": quete["recompense"]},
+                    "$setOnInsert": {
+                        "pseudo": user.name,
+                        "derniere_offrande": {},
+                        "roles_temporaires": {}
+                    }
+                },
                 upsert=True
             )
 
