@@ -1,0 +1,88 @@
+{
+    "Quêtes Journalières": [
+        {
+            "nom": "Offrande du Jour",
+            "resume": "Les divinités attendent ton hommage quotidien...",
+            "type": "reaction",
+            "details_mp": "Fais une offrande à l’un des cinq autels divins en réagissant avec l’émoji correspondant.",
+            "action": "offrande",
+            "emoji": null,
+            "reponse_attendue": null,
+            "recompense": 2
+        },
+        {
+            "nom": "Prière du Jour",
+            "resume": "Cherche la bénédiction d’un Façonneur…",
+            "type": "reaction",
+            "details_mp": "Réagis à l’un des autels avec l’émoji de prière pour recevoir ta bénédiction du jour.",
+            "action": "priere",
+            "emoji": null,
+            "reponse_attendue": null,
+            "recompense": 2
+        }
+    ],
+    "Quêtes Simples": [
+        {
+            "nom": "La miche du matin",
+            "resume": "Le boulanger local a besoin d’un coup de main…",
+            "type": "reaction",
+            "details_mp": "Salue le boulanger sur la #⛲grand-place et réagis à son message avec 🥖 pour lui apporter ton aide !\n\nExemple de message à envoyer :\n`Bonjour boulanger ! Voici votre miche.`",
+            "action": "reaction",
+            "emoji": "🥖",
+            "reponse_attendue": null,
+            "recompense": 2
+        },
+        {
+            "nom": "Voix des Anciens",
+            "resume": "Les Anciens murmurent à ceux qui savent écouter…",
+            "type": "reaction",
+            "details_mp": "Va dans #💨rumeurs-du-monde et réagis avec l’émoji 🔮 à l’un des murmures récents.\n\nExemple de message à envoyer :\n`J’ai entendu les murmures des Anciens...`",
+            "action": "reaction",
+            "emoji": "🔮",
+            "reponse_attendue": null,
+            "recompense": 3
+        },
+        {
+            "nom": "Omelette de Minuit",
+            "resume": "L’Aubergiste a besoin d’ingrédients pour sa fameuse omelette champêtre.",
+            "type": "reaction",
+            "details_mp": "Salue l’aubergiste au #💬comptoir et indique lui que tu as une livraison de champignons pour lui.\n\nExemple de message à envoyer :\n`Salut Aubergiste, j’ai une livraison de champignons pour toi !`",
+            "action": "reaction",
+            "emoji": "🍄",
+            "reponse_attendue": null,
+            "recompense": 6
+        }
+    ],
+    "Quêtes de Recherche": [
+        {
+            "nom": "Savoir Oublié",
+            "resume": "Un érudit cherche le nom d’un artefact découvert à Giaard…",
+            "type": "texte",
+            "details_mp": "Selon la rumeur, une potion trouvée sur les côtes, aux reflets bleutés, a été achetée à un plongeur. Peux-tu retrouver son nom dans les archives ? (https://lumharel.fr/potions)",
+            "action": "texte",
+            "emoji": null,
+            "reponse_attendue": "Extrait d’Atlante",
+            "recompense": 5
+        },
+        {
+            "nom": "L’Objet de Trop",
+            "resume": "Un collectionneur a acheté un artefact par erreur. Il veut que tu l’identifies.",
+            "type": "texte",
+            "details_mp": "Le collectionneur Darghel a trouvé une fiole scellée contenant un liquide rouge profond. Elle dégage une chaleur étrange…\n\nPeux-tu retrouver son nom dans les archives ? (https://lumharel.fr/artefacts)",
+            "action": "texte",
+            "emoji": null,
+            "reponse_attendue": "Fiole de Sang de Dragon",
+            "recompense": 6
+        },
+        {
+            "nom": "Remède Urgent",
+            "resume": "Un herboriste cherche une potion qui soigne les pertes de mémoire.",
+            "type": "texte",
+            "details_mp": "Le guérisseur Thalendrun est débordé. Il cherche désespérément une potion violette contre les pertes de mémoire…\n\nSauras-tu retrouver son nom dans les archives ? (https://lumharel.fr/potions)",
+            "action": "texte",
+            "emoji": null,
+            "reponse_attendue": "Élixir d'Aurore",
+            "recompense": 5
+        }
+    ]
+}
