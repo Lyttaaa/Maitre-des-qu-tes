@@ -28,18 +28,30 @@ def charger_quetes():
         return json.load(f)
 
 async def envoyer_quete(channel, quete, categorie):
-    emoji = ""
-    if isinstance(quete.get("emoji"), list):
-        emoji = ''.join(quete["emoji"])
-    elif isinstance(quete.get("emoji"), str):
-        emoji = quete["emoji"]
+    # Choisir une couleur selon la catégorie
+    couleurs = {
+        "Quêtes Journalières": 0x4CAF50,   # Vert
+        "Quêtes Simples": 0x2196F3,        # Bleu
+        "Quêtes de Recherche": 0x9C27B0    # Violet
+    }
+    couleur_embed = couleurs.get(categorie, 0xCCCCCC)
 
+    # Titre stylisé
+    titre = f"Quête – {quete['nom']}"
+
+    # Embed principal
     embed = discord.Embed(
-        title=f"{emoji + ' ' if emoji else ''}Quête — {quete['nom']}",
+        title=titre,
         description=quete["resume"],
-        color=0x4CAF50
+        color=couleur_embed
     )
-    embed.set_footer(text=categorie)
+
+    # Champ type + récompense
+    type_texte = f"{categorie} – {quete['recompense']} Lumes"
+    embed.add_field(name="📌 Type & Récompense", value=type_texte, inline=False)
+
+    embed.set_footer(text="Clique sur le bouton ci-dessous pour accepter la quête.")
+
     view = VueAcceptation(quete["nom"], quete["details_mp"])
     await channel.send(embed=embed, view=view)
 
