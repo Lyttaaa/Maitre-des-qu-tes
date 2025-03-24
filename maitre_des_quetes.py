@@ -186,7 +186,7 @@ async def on_raw_reaction_add(payload):
     if quete.get("type") != "reaction":
         continue
 
-    # 🔒 Vérifie que la quête a bien été acceptée
+    # ✅ Vérifie que la quête a bien été acceptée
     if quete["nom"] not in quetes_acceptees:
         continue
 
@@ -200,7 +200,7 @@ async def on_raw_reaction_add(payload):
             {"_id": user_id},
             {
                 "$addToSet": {"quetes": quete["nom"]},
-                "$set": {"pseudo": user.name}
+                "$set": {"pseudo": user.name}  # ✅ Ajout pseudo ici
             },
             upsert=True
         )
