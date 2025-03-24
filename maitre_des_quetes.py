@@ -188,7 +188,7 @@ async def on_raw_reaction_add(payload):
 
         # ✅ Vérifie que la quête a bien été acceptée
         if quete["nom"] not in quetes_acceptees:
-        continue
+            continue
 
         liste_emojis = quete.get("emoji", [])
         if isinstance(liste_emojis, str):
