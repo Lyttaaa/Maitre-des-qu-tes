@@ -1,86 +1,64 @@
-import discord
-from discord.ext import commands
-from discord.ui import View, Button
-import json
-import os
-from pymongo import MongoClient
+@bot.event
+async def on_raw_reaction_add(payload):
+    if payload.user_id == bot.user.id:
+        return
 
-# Configuration du bot
-intents = discord.Intents.default()
-intents.message_content = True
-intents.members = True
-bot = commands.Bot(command_prefix="!", intents=intents)
+    guild = bot.get_guild(payload.guild_id)
+    member = guild.get_member(payload.user_id)
+    if not member or member.bot:
+        return
 
-# MongoDB
-mongo_uri = os.getenv("MONGO_URI")
-client = MongoClient(mongo_uri)
-db = client.lumharel_bot
-accepted_collection = db.quetes_acceptees
+    user_id = str(member.id)
+    channel = bot.get_channel(payload.channel_id)
+    message = await channel.fetch_message(payload.message_id)
+    emoji = str(payload.emoji)
 
-# Channel cible pour poster les quêtes
-CHANNEL_ID = 1352143818929078322  # ID de ton channel #🎯tableau-des-quêtes
+    # Cherche les quêtes acceptées par cet utilisateur
+    accepted = accepted_collection.find_one({"_id": user_id})
+    if not accepted or not accepted.get("quetes"):
+        return
 
-# Chargement des quêtes depuis le fichier JSON
-def charger_quetes():
-    with open("quetes.json", "r", encoding="utf-8") as f:
-        return json.load(f)
+    # Charge toutes les quêtes
+    toutes_les_quetes = charger_quetes()
 
-# Vue personnalisée avec bouton "Accepter"
-class VueAcceptation(View):
-    def __init__(self, quete_id, mp_message):
-        super().__init__(timeout=None)
-        self.quete_id = quete_id
-        self.mp_message = mp_message
+    # Vérifie toutes les quêtes acceptées de type "reaction"
+    for categorie in toutes_les_quetes.values():
+        for quete in categorie:
+            if quete["nom"] in accepted["quetes"] and quete["type"] == "reaction":
+                # Vérifie l’emoji
+                liste_emojis = quete["emoji"]
+                if isinstance(liste_emojis, str):
+                    liste_emojis = [liste_emojis]
+                if emoji not in liste_emojis:
+                    continue
 
-    @discord.ui.button(label="Accepter 📥", style=discord.ButtonStyle.green)
-    async def accepter(self, interaction: discord.Interaction, button: discord.ui.Button):
-        user_id = str(interaction.user.id)
-        quete = accepted_collection.find_one({"_id": user_id})
+                # Si la quête cible un PNJ et un channel spécifiques
+                if "pnj" in quete and "channel" in quete:
+                    if channel.name != quete["channel"]:
+                        continue
 
-        if quete and self.quete_id in quete.get("quetes", []):
-            await interaction.response.send_message("Tu as déjà accepté cette quête !", ephemeral=True)
-            return
+                    if not any(
+                        quete["pnj"].lower() in (embed.description or "").lower()
+                        for embed in message.embeds if embed
+                    ):
+                        continue
 
-        accepted_collection.update_one(
-            {"_id": user_id},
-            {"$addToSet": {"quetes": self.quete_id}},
-            upsert=True
-        )
+                # ✅ Quête validée
+                accepted_collection.update_one(
+                    {"_id": user_id},
+                    {"$pull": {"quetes": quete["nom"]}}
+                )
 
-        try:
-            await interaction.user.send(f"📜 **Détails de la quête** :\n{self.mp_message}")
-            await interaction.response.send_message("Tu as accepté cette quête. Regarde tes MP !", ephemeral=True)
-        except discord.Forbidden:
-            await interaction.response.send_message("Je n'arrive pas à t'envoyer de MP !", ephemeral=True)
+                user_data = db.utilisateurs.find_one({"_id": user_id})
+                if user_data:
+                    db.utilisateurs.update_one(
+                        {"_id": user_id},
+                        {"$inc": {"lumes": quete["recompense"]}}
+                    )
 
-# Commande pour poster les quêtes dans le channel
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def poster_quetes(ctx):
-    quetes_par_type = charger_quetes()
-    channel = bot.get_channel(CHANNEL_ID)
+                try:
+                    await member.send(f"✅ Tu as complété la quête **{quete['nom']}** !\n🎉 Tu gagnes **{quete['recompense']} Lumes**.")
+                except discord.Forbidden:
+                    pass
 
-    for categorie, quetes in quetes_par_type.items():
-        for quete in quetes:
-            # Gestion des emojis (liste ou string)
-            emoji = ""
-            if isinstance(quete.get("emoji"), list):
-                emoji = ''.join(quete["emoji"])
-            elif isinstance(quete.get("emoji"), str):
-                emoji = quete["emoji"]
-
-            embed = discord.Embed(
-                title=f"{emoji + ' ' if emoji else ''}Quête — {quete['nom']}",
-                description=quete["resume"],
-                color=0x4CAF50
-            )
-            embed.set_footer(text=categorie)
-
-            if quete["type"] in ["reaction", "texte"]:
-                view = VueAcceptation(quete["nom"], quete["details_mp"])
-                await channel.send(embed=embed, view=view)
-            else:
-                await channel.send(embed=embed)
-
-# Lancement du bot
-bot.run(os.getenv("DISCORD_TOKEN"))
+                print(f"✅ Validation de la quête {quete['nom']} pour {member.name}")
