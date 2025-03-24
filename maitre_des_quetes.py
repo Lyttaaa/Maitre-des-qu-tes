@@ -113,7 +113,7 @@ class VueAcceptation(View):
                 description=f"**{self.quete['nom']}**",
                 color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
             )
-            embed.add_field(name="💬 Énoncé", value=self.quete["resume"], inline=False)
+            embed.add_field(name="💬 Énoncé", value=self.quete["enonce"], inline=False)
             embed.add_field(
                 name="👉 Objectif",
                 value="Trouve la réponse à cette énigme et réponds-moi quand tu as trouvé !",
@@ -126,7 +126,7 @@ class VueAcceptation(View):
                 description=f"**{self.quete['nom']}**",
                 color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
             )
-            embed.add_field(name="💬 Description", value=self.quete["resume"], inline=False)
+            embed.add_field(name="💬 Description", value=self.quete["description"], inline=False)
             embed.add_field(name="👉 Objectif", value=self.quete["details_mp"], inline=False)
             embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
 
