@@ -18,6 +18,7 @@ mongo_uri = os.getenv("MONGO_URI")
 client = MongoClient(mongo_uri)
 db = client.lumharel_bot
 accepted_collection = db.quetes_acceptees
+completed_collection = db.quetes_terminees  # ✅ Ajout
 utilisateurs = db.utilisateurs
 
 # ID du salon de quêtes
@@ -81,11 +82,9 @@ async def poster_quetes(ctx):
     quetes_par_type = charger_quetes()
     channel = bot.get_channel(CHANNEL_ID)
 
-    # Journalières fixes
     for quete in quetes_par_type.get("Quêtes Journalières", []):
         await envoyer_quete(channel, quete, "Quêtes Journalières")
 
-    # Aléatoire : simple + recherche
     simples = quetes_par_type.get("Quêtes Simples", [])
     if simples:
         await envoyer_quete(channel, choice(simples), "Quêtes Simples")
@@ -122,6 +121,11 @@ async def on_raw_reaction_add(payload):
 
         if emoji in liste_emojis:
             accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["nom"]}})
+            completed_collection.update_one(  # ✅ Ajout
+                {"_id": user_id},
+                {"$addToSet": {"quetes": quete["nom"]}},
+                upsert=True
+            )
 
             user = payload.member
             profil = utilisateurs.find_one({"_id": user_id})
@@ -179,6 +183,11 @@ async def on_message(message):
                     {"_id": user_id},
                     {"$pull": {"quetes": quete["nom"]}}
                 )
+                completed_collection.update_one(  # ✅ Ajout
+                    {"_id": user_id},
+                    {"$addToSet": {"quetes": quete["nom"]}},
+                    upsert=True
+                )
 
                 profil = utilisateurs.find_one({"_id": user_id})
                 if not profil:
@@ -202,5 +211,33 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
-# 🚀 Lancement du bot
+# 📜 Commande : Voir ses quêtes en cours
+@bot.command()
+async def mes_quetes(ctx):
+    user_id = str(ctx.author.id)
+    user_data = accepted_collection.find_one({"_id": user_id})
+
+    if not user_data or not user_data.get("quetes"):
+        await ctx.send(f"📭 {ctx.author.mention}, tu n'as actuellement aucune quête en cours.")
+        return
+
+    quetes = user_data["quetes"]
+    liste = "\n".join(f"• {q}" for q in quetes)
+    await ctx.send(f"📜 **Quêtes en cours pour {ctx.author.mention}** :\n{liste}")
+
+# 🏅 Commande : Voir ses quêtes terminées
+@bot.command()
+async def quetes_terminees(ctx):
+    user_id = str(ctx.author.id)
+    user_data = completed_collection.find_one({"_id": user_id})
+
+    if not user_data or not user_data.get("quetes"):
+        await ctx.send(f"🔍 {ctx.author.mention}, tu n'as encore terminé aucune quête.")
+        return
+
+    quetes = user_data["quetes"]
+    liste = "\n".join(f"• {q}" for q in quetes)
+    await ctx.send(f"🏅 **Quêtes terminées par {ctx.author.mention}** :\n{liste}")
+
+# 🚀 Lancement
 bot.run(os.getenv("DISCORD_TOKEN"))
