@@ -199,7 +199,7 @@ async def on_raw_reaction_add(payload):
         if quete.get("type") != "reaction":
             continue
 
-        if quete["id"] not in ids_acceptees:
+        if quete["id"] not in [q["id"] if isinstance(q, dict) else q for q in quetes_acceptees]:
             continue
 
         liste_emojis = quete.get("emoji", [])
@@ -207,15 +207,16 @@ async def on_raw_reaction_add(payload):
             liste_emojis = [liste_emojis]
 
         if emoji in liste_emojis:
-            accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["id"]}})
+            accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": {"id": quete["id"]}}})
             completed_collection.update_one(
                 {"_id": user_id},
                 {
-                    "$addToSet": {"quetes": quete["id"]},
+                    "$addToSet": {"quetes": {"id": quete["id"], "nom": quete["nom"]}},
                     "$set": {"pseudo": user.name}
                 },
                 upsert=True
             )
+
 
             utilisateurs.update_one(
                 {"_id": user_id},
@@ -255,17 +256,17 @@ async def on_message(message):
         toutes_quetes = [q for lst in quetes.values() for q in lst]
 
         for quete in toutes_quetes:
-            if quete.get("type") != "texte" or quete["id"] not in ids_acceptees:
+            if quete["id"] not in [q["id"] if isinstance(q, dict) else q for q in quetes_acceptees]:
                 continue
 
             bonne_reponse = normaliser(quete.get("reponse_attendue", ""))
             if normaliser(contenu) == bonne_reponse:
-                accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["id"]}})
+                accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": {"id": quete["id"]}}})
                 completed_collection.update_one(
                     {"_id": user_id},
                     {
-                        "$addToSet": {"quetes": quete["id"]},
-                        "$set": {"pseudo": message.author.name}
+                        "$addToSet": {"quetes": {"id": quete["id"], "nom": quete["nom"]}},
+                        "$set": {"pseudo": user.name}
                     },
                     upsert=True
                 )
