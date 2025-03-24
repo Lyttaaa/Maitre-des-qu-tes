@@ -100,8 +100,6 @@ class VueAcceptation(View):
         except discord.Forbidden:
             await interaction.response.send_message("Je n'arrive pas à t'envoyer de MP !", ephemeral=True)
 
-                    break
-
         # Ajoute la quête comme acceptée
         accepted_collection.update_one(
             {"_id": user_id},
