@@ -187,7 +187,7 @@ async def on_message(message):
 
     if isinstance(message.channel, discord.DMChannel):
         user_id = str(message.author.id)
-        contenu = normaliser(message.content)
+        contenu = message.content.strip()
         quetes = charger_quetes()
         user_data = accepted_collection.find_one({"_id": user_id})
         if not user_data:
@@ -200,8 +200,8 @@ async def on_message(message):
             if quete.get("type") != "texte" or quete["nom"] not in quetes_acceptees:
                 continue
 
-            bonne_reponse = normaliser(quete.get("reponse_attendue", ""))
-            if contenu == bonne_reponse:
+            bonne_reponse = quete.get("reponse_attendue", "").lower().strip()
+            if contenu.lower().strip() == bonne_reponse.lower().strip():
                 accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["nom"]}})
                 completed_collection.update_one(
                     {"_id": user_id}, {"$addToSet": {"quetes": quete["nom"]}}, upsert=True
