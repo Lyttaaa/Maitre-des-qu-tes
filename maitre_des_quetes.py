@@ -105,7 +105,8 @@ class VueAcceptation(View):
 
         # Création de l'embed personnalisé
         embed = discord.Embed(
-            title=f"{EMOJI_PAR_CATEGORIE.get(self.categorie, '📜')} {self.quete['nom']}",
+            title=f"{EMOJI_PAR_CATEGORIE.get(self.categorie, '📜')} Quête de {self.categorie.replace('Quêtes ', '')}",
+            description=f"**{self.quete['nom']}**",
             color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
         )
         embed.add_field(name="💬 Description", value=self.quete["resume"], inline=False)
