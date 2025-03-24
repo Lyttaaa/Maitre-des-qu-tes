@@ -201,7 +201,7 @@ async def on_message(message):
                 continue
 
             bonne_reponse = quete.get("reponse_attendue", "").lower().strip()
-            if normaliser(contenu) == normaliser(bonne_reponse):
+            if contenu.lower().strip() == bonne_reponse.lower().strip():
                 accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["nom"]}})
                 completed_collection.update_one(
                     {"_id": user_id}, {"$addToSet": {"quetes": quete["nom"]}}, upsert=True
