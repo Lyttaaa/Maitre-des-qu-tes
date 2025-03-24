@@ -9,7 +9,7 @@ from pymongo import MongoClient
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
-intents.reactions = True  # Important pour détecter les réactions
+intents.reactions = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # MongoDB
@@ -17,6 +17,7 @@ mongo_uri = os.getenv("MONGO_URI")
 client = MongoClient(mongo_uri)
 db = client.lumharel_bot
 accepted_collection = db.quetes_acceptees
+utilisateurs = db.utilisateurs
 
 # Channel cible pour poster les quêtes
 CHANNEL_ID = 1352143818929078322
@@ -79,7 +80,7 @@ async def poster_quetes(ctx):
             view = VueAcceptation(quete["nom"], quete["details_mp"])
             await channel.send(embed=embed, view=view)
 
-# ✅ Événement : détection des réactions
+# ✅ Validation des quêtes via réaction
 @bot.event
 async def on_raw_reaction_add(payload):
     if payload.member is None or payload.member.bot:
@@ -108,17 +109,87 @@ async def on_raw_reaction_add(payload):
             liste_emojis = [liste_emojis]
 
         if emoji in liste_emojis:
-            # Validation : on retire la quête de la liste, on envoie un message, etc.
+            # Retire la quête de la liste
             accepted_collection.update_one(
                 {"_id": user_id},
                 {"$pull": {"quetes": quete["nom"]}}
             )
 
-            channel = bot.get_channel(payload.channel_id)
+            # Ajout de Lumes
             user = payload.member
+            profil = utilisateurs.find_one({"_id": user_id})
+            if not profil:
+                utilisateurs.insert_one({
+                    "_id": user_id,
+                    "pseudo": user.name,
+                    "lumes": quete["recompense"],
+                    "derniere_offrande": {},
+                    "roles_temporaires": {}
+                })
+            else:
+                utilisateurs.update_one(
+                    {"_id": user_id},
+                    {"$inc": {"lumes": quete["recompense"]}}
+                )
 
-            await channel.send(f"✅ {user.mention} a terminé la quête **{quete['nom']}** et gagne **{quete['recompense']} Lumes** !")
+            # Envoi du message de succès
+            channel = bot.get_channel(payload.channel_id)
+            await channel.send(f"✅ {user.mention} a terminé la quête **{quete['nom']}** et gagné **{quete['recompense']} Lumes** !")
             return
+
+# ✅ Validation des quêtes texte en MP
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+
+    if isinstance(message.channel, discord.DMChannel):
+        user_id = str(message.author.id)
+        contenu = message.content.strip()
+        quetes = charger_quetes()
+        user_data = accepted_collection.find_one({"_id": user_id})
+        if not user_data:
+            return
+
+        quetes_acceptees = user_data.get("quetes", [])
+        toutes_quetes = []
+        for lst in quetes.values():
+            toutes_quetes.extend(lst)
+
+        for quete in toutes_quetes:
+            if quete["type"] != "texte":
+                continue
+            if quete["nom"] not in quetes_acceptees:
+                continue
+            bonne_reponse = quete.get("reponse_attendue", "").lower().strip()
+
+            if contenu.lower() == bonne_reponse:
+                accepted_collection.update_one(
+                    {"_id": user_id},
+                    {"$pull": {"quetes": quete["nom"]}}
+                )
+
+                profil = utilisateurs.find_one({"_id": user_id})
+                if not profil:
+                    utilisateurs.insert_one({
+                        "_id": user_id,
+                        "pseudo": message.author.name,
+                        "lumes": quete["recompense"],
+                        "derniere_offrande": {},
+                        "roles_temporaires": {}
+                    })
+                else:
+                    utilisateurs.update_one(
+                        {"_id": user_id},
+                        {"$inc": {"lumes": quete["recompense"]}}
+                    )
+
+                await message.channel.send(
+                    f"✅ Ta réponse est correcte ! Tu as complété la quête **{quete['nom']}** et gagné **{quete['recompense']} Lumes** !"
+                )
+                return
+
+    await bot.process_commands(message)
 
 # Lancement du bot
 bot.run(os.getenv("DISCORD_TOKEN"))
