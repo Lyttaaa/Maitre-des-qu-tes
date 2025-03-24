@@ -112,7 +112,9 @@ async def on_raw_reaction_add(payload):
         toutes_quetes.extend(lst)
 
     for quete in toutes_quetes:
-        if quete["type"] != "reaction" or quete["nom"] not in quetes_acceptees:
+        if "type" not in quete or quete["type"] != "reaction":
+            continue
+        if quete["nom"] not in quetes_acceptees:
             continue
 
         liste_emojis = quete.get("emoji", [])
@@ -120,8 +122,10 @@ async def on_raw_reaction_add(payload):
             liste_emojis = [liste_emojis]
 
         if emoji in liste_emojis:
+            print(f"[✅ DEBUG] Validation par réaction — Quête : {quete['nom']} / Emoji : {emoji}")
+
             accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["nom"]}})
-            completed_collection.update_one(  # ✅ Ajout
+            completed_collection.update_one(
                 {"_id": user_id},
                 {"$addToSet": {"quetes": quete["nom"]}},
                 upsert=True
@@ -174,16 +178,21 @@ async def on_message(message):
             toutes_quetes.extend(lst)
 
         for quete in toutes_quetes:
-            if quete["type"] != "texte" or quete["nom"] not in quetes_acceptees:
+            if "type" not in quete or quete["type"] != "texte":
                 continue
+            if quete["nom"] not in quetes_acceptees:
+                continue
+
             bonne_reponse = quete.get("reponse_attendue", "").lower().strip()
 
             if contenu.lower() == bonne_reponse:
+                print(f"[✅ DEBUG] Validation texte — Quête : {quete['nom']} / Réponse : {contenu}")
+
                 accepted_collection.update_one(
                     {"_id": user_id},
                     {"$pull": {"quetes": quete["nom"]}}
                 )
-                completed_collection.update_one(  # ✅ Ajout
+                completed_collection.update_one(
                     {"_id": user_id},
                     {"$addToSet": {"quetes": quete["nom"]}},
                     upsert=True
@@ -210,6 +219,7 @@ async def on_message(message):
                 return
 
     await bot.process_commands(message)
+
 
 # 📜 Commande : Voir ses quêtes en cours
 @bot.command()
