@@ -180,6 +180,8 @@ async def on_raw_reaction_add(payload):
                 await bot.get_channel(payload.channel_id).send(f"✅ {user.mention} a terminé la quête **{quete['nom']}** ! (MP non reçu)")
             return
 
+# ... (le début de ton code reste identique)
+
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -187,7 +189,7 @@ async def on_message(message):
 
     if isinstance(message.channel, discord.DMChannel):
         user_id = str(message.author.id)
-        contenu = message.content.strip()
+        contenu = normaliser(message.content)
         quetes = charger_quetes()
         user_data = accepted_collection.find_one({"_id": user_id})
         if not user_data:
@@ -200,8 +202,8 @@ async def on_message(message):
             if quete.get("type") != "texte" or quete["nom"] not in quetes_acceptees:
                 continue
 
-            bonne_reponse = quete.get("reponse_attendue", "").lower().strip()
-            if contenu.lower().strip() == bonne_reponse.lower().strip():
+            bonne_reponse = normaliser(quete.get("reponse_attendue", ""))
+            if contenu == bonne_reponse:
                 accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["nom"]}})
                 completed_collection.update_one(
                     {"_id": user_id}, {"$addToSet": {"quetes": quete["nom"]}}, upsert=True
