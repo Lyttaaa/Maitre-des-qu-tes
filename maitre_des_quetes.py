@@ -57,18 +57,21 @@ class VueAcceptation(View):
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def poster_quetes(ctx):
-    quetes = charger_quetes()
+    toutes_les_quetes = charger_quetes()
     channel = bot.get_channel(CHANNEL_ID)
 
-    for quete in quetes:
-        embed = discord.Embed(title=quete["titre"], description=quete["resume"], color=0x4CAF50)
-        embed.set_footer(text=quete["type"])
+    for categorie, quetes in toutes_les_quetes.items():
+        for quete in quetes:
+            titre = f"{quete['emoji']} {quete['titre']}"
+            description = quete['resume']
+            embed = discord.Embed(title=titre, description=description, color=0x4CAF50)
+            embed.set_footer(text=f"Catégorie : {categorie}")
 
-        if quete.get("accepter"):
-            view = VueAcceptation(quete["titre"], quete["mp"])
-            await channel.send(embed=embed, view=view)
-        else:
-            await channel.send(embed=embed)
+            if quete.get("accepter"):
+                view = VueAcceptation(quete["titre"], quete["mp"])
+                await channel.send(embed=embed, view=view)
+            else:
+                await channel.send(embed=embed)
 
 # Lancement du bot
 bot.run(os.getenv("DISCORD_TOKEN"))
