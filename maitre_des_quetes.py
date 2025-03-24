@@ -210,8 +210,8 @@ async def on_message(message):
             if quete.get("type") != "texte" or quete["nom"] not in quetes_acceptees:
                 continue
 
-            bonne_reponse = quete.get("reponse_attendue", "").lower().strip()
-            if contenu.lower().strip() == bonne_reponse.lower().strip():
+            bonne_reponse = normaliser(quete.get("reponse_attendue", ""))
+            if normaliser(contenu) == bonne_reponse:
                 accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["nom"]}})
                 completed_collection.update_one(
                     {"_id": user_id}, {"$addToSet": {"quetes": quete["nom"]}}, upsert=True
