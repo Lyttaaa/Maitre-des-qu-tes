@@ -5,6 +5,13 @@ import json
 import os
 from pymongo import MongoClient
 from random import choice
+import unicodedata
+
+def normaliser(texte):
+    texte = texte.lower().strip()
+    texte = unicodedata.normalize("NFKD", texte)
+    texte = ''.join(c for c in texte if not unicodedata.combining(c))
+    return texte
 
 # Configuration du bot
 intents = discord.Intents.default()
@@ -81,10 +88,14 @@ class VueAcceptation(View):
             )
 
             if not est_journaliere:
-                await interaction.response.send_message(
-                    "Tu as déjà terminé cette quête. Elle ne peut être accomplie qu’une seule fois.",
-                    ephemeral=True
-                )
+                try:
+                    await interaction.user.send(
+                        f"📪 Tu as déjà terminé cette quête (**{quete_id}**). Elle ne peut être accomplie qu’une seule fois."
+                    )
+                except discord.Forbidden:
+                    await interaction.response.send_message(
+                        "Tu as déjà terminé cette quête, mais je ne peux pas t’envoyer de MP !", ephemeral=True
+                    )
                 return
 
         # Ajout en base
@@ -97,25 +108,6 @@ class VueAcceptation(View):
         try:
             await interaction.user.send(f"📜 **Détails de la quête** :\n{self.mp_message}")
             await interaction.response.send_message("Tu as accepté cette quête. Regarde tes MP !", ephemeral=True)
-        except discord.Forbidden:
-            await interaction.response.send_message("Je n'arrive pas à t'envoyer de MP !", ephemeral=True)
-
-        # Ajoute la quête comme acceptée
-        accepted_collection.update_one(
-            {"_id": user_id},
-            {"$addToSet": {"quetes": quete_id}},
-            upsert=True
-        )
-
-        try:
-            await interaction.user.send(f"📜 **Détails de la quête** :\n{self.mp_message}")
-            await interaction.response.send_message("Tu as accepté cette quête. Regarde tes MP !", ephemeral=True)
-        except discord.Forbidden:
-            await interaction.response.send_message("Je n'arrive pas à t'envoyer de MP !", ephemeral=True)
-
-        try:
-            await interaction.user.send(f"📜 **Nouvelle quête reçue !**\n{self.mp_message}")
-            await interaction.response.send_message("Ta quête a été ajoutée ! Regarde tes MP. 📨", ephemeral=True)
         except discord.Forbidden:
             await interaction.response.send_message("Je n'arrive pas à t'envoyer de MP !", ephemeral=True)
 
@@ -204,7 +196,7 @@ async def on_message(message):
                 continue
 
             bonne_reponse = quete.get("reponse_attendue", "").lower().strip()
-            if contenu.lower() == bonne_reponse:
+            if normaliser(contenu) == normaliser(bonne_reponse):
                 accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["nom"]}})
                 completed_collection.update_one(
                     {"_id": user_id}, {"$addToSet": {"quetes": quete["nom"]}}, upsert=True
