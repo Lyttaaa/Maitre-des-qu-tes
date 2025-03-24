@@ -8,6 +8,9 @@ from random import choice
 import re
 import unicodedata
 
+def ids_quetes(liste):
+    return [q["id"] if isinstance(q, dict) else q for q in liste]
+
 def normaliser(texte):
     texte = texte.lower().strip()
     texte = unicodedata.normalize("NFKD", texte)
@@ -100,7 +103,12 @@ class VueAcceptation(View):
         accepted_collection.update_one(
             {"_id": user_id},
             {
-                "$addToSet": {"quetes": self.quete["id"]},
+                "$addToSet": {
+                    "quetes": {
+                        "id": self.quete["id"],
+                        "nom": self.quete["nom"]
+                    }
+                },
                 "$set": {"pseudo": interaction.user.name}
             },
             upsert=True
@@ -174,7 +182,7 @@ async def on_raw_reaction_add(payload):
     if payload.member is None or payload.member.bot:
         return
 
-    user = payload.member  # ✅ DÉFINIR AVANT
+    user = payload.member
     user_id = str(payload.user_id)
     emoji = str(payload.emoji)
     quetes = charger_quetes()
@@ -183,14 +191,15 @@ async def on_raw_reaction_add(payload):
         return
 
     quetes_acceptees = user_data.get("quetes", [])
+    ids_acceptees = ids_quetes(quetes_acceptees)
+
     toutes_quetes = [q for lst in quetes.values() for q in lst]
 
     for quete in toutes_quetes:
         if quete.get("type") != "reaction":
             continue
 
-        # ✅ Vérifie que la quête a bien été acceptée
-        if quete["nom"] not in quetes_acceptees:
+        if quete["id"] not in ids_acceptees:
             continue
 
         liste_emojis = quete.get("emoji", [])
@@ -198,12 +207,12 @@ async def on_raw_reaction_add(payload):
             liste_emojis = [liste_emojis]
 
         if emoji in liste_emojis:
-            accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["nom"]}})
+            accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["id"]}})
             completed_collection.update_one(
                 {"_id": user_id},
                 {
-                    "$addToSet": {"quetes": quete["nom"]},
-                    "$set": {"pseudo": user.name}  # ✅ Ajout pseudo ici
+                    "$addToSet": {"quetes": quete["id"]},
+                    "$set": {"pseudo": user.name}
                 },
                 upsert=True
             )
@@ -226,7 +235,7 @@ async def on_raw_reaction_add(payload):
             except discord.Forbidden:
                 await bot.get_channel(payload.channel_id).send(f"✅ {user.mention} a terminé la quête **{quete['nom']}** ! (MP non reçu)")
             return
-
+            
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -241,26 +250,35 @@ async def on_message(message):
             return
 
         quetes_acceptees = user_data.get("quetes", [])
+        ids_acceptees = ids_quetes(quetes_acceptees)
+
         toutes_quetes = [q for lst in quetes.values() for q in lst]
 
         for quete in toutes_quetes:
-            if quete.get("type") != "texte" or quete["nom"] not in quetes_acceptees:
+            if quete.get("type") != "texte" or quete["id"] not in ids_acceptees:
                 continue
 
             bonne_reponse = normaliser(quete.get("reponse_attendue", ""))
             if normaliser(contenu) == bonne_reponse:
-                accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["nom"]}})
+                accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": quete["id"]}})
                 completed_collection.update_one(
-                {"_id": user_id},
-                {
-                    "$addToSet": {"quetes": quete["nom"]},
-                    "$set": {"pseudo": user.name}
-                },
-                upsert=True
-            )
+                    {"_id": user_id},
+                    {
+                        "$addToSet": {"quetes": quete["id"]},
+                        "$set": {"pseudo": message.author.name}
+                    },
+                    upsert=True
+                )
                 utilisateurs.update_one(
                     {"_id": user_id},
-                    {"$inc": {"lumes": quete["recompense"]}, "$setOnInsert": {"pseudo": message.author.name, "derniere_offrande": {}, "roles_temporaires": {}}},
+                    {
+                        "$inc": {"lumes": quete["recompense"]},
+                        "$setOnInsert": {
+                            "pseudo": message.author.name,
+                            "derniere_offrande": {},
+                            "roles_temporaires": {}
+                        }
+                    },
                     upsert=True
                 )
 
