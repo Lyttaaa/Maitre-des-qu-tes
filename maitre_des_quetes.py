@@ -111,7 +111,7 @@ class VueAcceptation(View):
         )
 
         try:
-            await interaction.user.send(f"📜 **Détails de la quête** :\n{self.mp_message}")
+            await interaction.user.send(self.mp_message)
             await interaction.response.send_message("Tu as accepté cette quête. Regarde tes MP !", ephemeral=True)
         except discord.Forbidden:
             await interaction.response.send_message("Je n'arrive pas à t'envoyer de MP !", ephemeral=True)
