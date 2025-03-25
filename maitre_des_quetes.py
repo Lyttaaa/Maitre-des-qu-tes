@@ -105,7 +105,10 @@ class VueAcceptation(View):
             await interaction.response.send_message("Tu as déjà accepté cette quête ! Consulte tes quêtes en cours ou terminées: !mes_quetes", ephemeral=True)
             return
 
-        deja_faite = completed_collection.find_one({"_id": user_id, "quetes": quete_id})
+        deja_faite = completed_collection.find_one({
+            "_id": user_id,
+            "quetes": {"$elemMatch": {"id": self.quete["id"]}}
+        })
         if deja_faite and self.categorie != "Quêtes Journalières":
             try:
                 await interaction.user.send(f"📪 Tu as déjà terminé cette quête (**{quete_id}**). Elle ne peut être accomplie qu’une seule fois. Consulte tes quêtes en cours ou terminées: !mes_quetes")
