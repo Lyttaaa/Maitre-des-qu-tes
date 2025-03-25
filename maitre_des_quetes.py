@@ -59,7 +59,14 @@ CHANNEL_ID = 1352143818929078322
 
 def charger_quetes():
     with open("quetes.json", "r", encoding="utf-8") as f:
-        return json.load(f)
+        data = json.load(f)
+
+    # Injecte la catégorie dans chaque quête
+    for categorie, quetes in data.items():
+        for quete in quetes:
+            quete["categorie"] = categorie  # ← magique ici ✨
+
+    return data
 
 async def envoyer_quete(channel, quete, categorie):
     emoji = EMOJI_PAR_CATEGORIE.get(categorie, "❓")
@@ -249,7 +256,7 @@ async def on_raw_reaction_add(payload):
                         "quetes": {
                             "id": quete["id"],
                             "nom": quete["nom"],
-                            "categorie": quete.get("categorie", "Inconnue")
+                            "categorie": quete["categorie"]
                          }
                      },
                      "$set": {"pseudo": user.name}
@@ -309,7 +316,7 @@ async def on_message(message):
                             "quetes": {
                                 "id": quete["id"],
                                 "nom": quete["nom"],
-                                "categorie": quete.get("categorie", "Inconnue")
+                                "categorie": quete["categorie"]
                     }
                 },
                 "$set": {"pseudo": user.name}
