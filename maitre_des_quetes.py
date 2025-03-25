@@ -51,6 +51,7 @@ db = client.lumharel_bot
 accepted_collection = db.quetes_acceptees
 completed_collection = db.quetes_terminees
 utilisateurs = db.utilisateurs
+rotation_collection = db.rotation_quetes
 
 CHANNEL_ID = 1352143818929078322
 
@@ -150,31 +151,27 @@ class VueAcceptation(View):
 # ... tes imports + fonctions existantes ...
 
 def get_quete_non_postee(categorie, quetes_possibles):
-    fichier_rotation = "rotation_quetes.json"
+    collection_rotation = db.rotation_quetes
 
-    # Créer le fichier s’il n’existe pas encore
-    if not os.path.exists(fichier_rotation):
-        with open(fichier_rotation, "w", encoding="utf-8") as f:
-            json.dump({}, f)
+    # Récupérer les quêtes déjà postées pour la catégorie
+    doc = collection_rotation.find_one({"_id": categorie})
+    deja_postees = doc["postees"] if doc else []
 
-    # Charger les données
-    with open(fichier_rotation, "r", encoding="utf-8") as f:
-        rotation_data = json.load(f)
-
-    deja_postees = rotation_data.get(categorie, [])
     restantes = [q for q in quetes_possibles if q["id"] not in deja_postees]
 
-    # Si tout a été posté, on reset la rotation
+    # Si tout a été posté, on reset
     if not restantes:
-        rotation_data[categorie] = []
         restantes = quetes_possibles
+        deja_postees = []
 
     quete = choice(restantes)
-    rotation_data.setdefault(categorie, []).append(quete["id"])
 
-    # Sauvegarde
-    with open(fichier_rotation, "w", encoding="utf-8") as f:
-        json.dump(rotation_data, f, indent=2, ensure_ascii=False)
+    # Mettre à jour MongoDB
+    collection_rotation.update_one(
+        {"_id": categorie},
+        {"$set": {"postees": deja_postees + [quete["id"]]}},
+        upsert=True
+    )
 
     return quete
     
