@@ -99,13 +99,13 @@ class VueAcceptation(View):
 
         quete_data = accepted_collection.find_one({"_id": user_id})
         if quete_data and quete_id in quete_data.get("quetes", []):
-            await interaction.response.send_message("Tu as déjà accepté cette quête !", ephemeral=True)
+            await interaction.response.send_message("Tu as déjà accepté cette quête ! Consulte tes quêtes en cours ou terminées: !mes_quetes", ephemeral=True)
             return
 
         deja_faite = completed_collection.find_one({"_id": user_id, "quetes": quete_id})
         if deja_faite and self.categorie != "Quêtes Journalières":
             try:
-                await interaction.user.send(f"📪 Tu as déjà terminé cette quête (**{quete_id}**). Elle ne peut être accomplie qu’une seule fois.")
+                await interaction.user.send(f"📪 Tu as déjà terminé cette quête (**{quete_id}**). Elle ne peut être accomplie qu’une seule fois. Consulte tes quêtes en cours ou terminées: !mes_quetes")
             except discord.Forbidden:
                 await interaction.response.send_message("Tu as déjà terminé cette quête, mais je ne peux pas t’envoyer de MP !", ephemeral=True)
             return
@@ -154,7 +154,7 @@ class VueAcceptation(View):
 
         try:
             await interaction.user.send(embed=embed)
-            await interaction.response.send_message("Tu as accepté cette quête. Regarde tes MP !", ephemeral=True)
+            await interaction.response.send_message("Tu as accepté cette quête. Regarde tes MP ! Consulte tes quêtes en cours ou terminées: !mes_quetes", ephemeral=True)
         except discord.Forbidden:
             await interaction.response.send_message("Je n'arrive pas à t'envoyer de MP !", ephemeral=True)
 
@@ -346,32 +346,35 @@ async def on_message(message):
 @bot.command()
 async def mes_quetes(ctx):
     user_id = str(ctx.author.id)
-    user_data = accepted_collection.find_one({"_id": user_id})
 
-    if not user_data or not user_data.get("quetes"):
-        await ctx.send(f"📭 {ctx.author.mention}, tu n'as actuellement aucune quête en cours.")
-        return
-
-    quetes = user_data["quetes"]
     toutes_quetes = [q for lst in charger_quetes().values() for q in lst]
     id_to_nom = {q["nom"]: f"{q['id']} – {q['nom']}" for q in toutes_quetes}
-    liste = "\n".join(f"• {id_to_nom.get(q, q)}" for q in quetes)
-    await ctx.send(f"📜 **Quêtes en cours pour {ctx.author.mention}** :\n{liste}")
 
-@bot.command()
-async def quetes_terminees(ctx):
-    user_id = str(ctx.author.id)
-    user_data = completed_collection.find_one({"_id": user_id})
+    # --- Quêtes en cours ---
+    accepted = accepted_collection.find_one({"_id": user_id})
+    quetes_en_cours = accepted.get("quetes", []) if accepted else []
+    lignes_en_cours = "\n".join(
+        f"• {id_to_nom.get(q['nom'], f'{q['id']} – {q['nom']}')}" if isinstance(q, dict) else f"• {q}"
+        for q in quetes_en_cours
+    ) or "Aucune 📭"
 
-    if not user_data or not user_data.get("quetes"):
-        await ctx.send(f"🔍 {ctx.author.mention}, tu n'as encore terminé aucune quête.")
-        return
+    # --- Quêtes terminées ---
+    completed = completed_collection.find_one({"_id": user_id})
+    quetes_terminees = completed.get("quetes", []) if completed else []
+    lignes_terminees = "\n".join(
+        f"• {id_to_nom.get(q['nom'], f'{q['id']} – {q['nom']}')}" if isinstance(q, dict) else f"• {q}"
+        for q in quetes_terminees
+    ) or "Aucune 🔍"
 
-    quetes = user_data["quetes"]
-    toutes_quetes = [q for lst in charger_quetes().values() for q in lst]
-    id_to_nom = {q["nom"]: f"{q['id']} – {q['nom']}" for q in toutes_quetes}
-    liste = "\n".join(f"• {id_to_nom.get(q, q)}" for q in quetes)
-    await ctx.send(f"🏅 **Quêtes terminées par {ctx.author.mention}** :\n{liste}")
+    # --- Envoi de l'embed ---
+    embed = discord.Embed(
+        title=f"📘 Quêtes de {ctx.author.display_name}",
+        color=0x4E8CC7
+    )
+    embed.add_field(name="📜 Quêtes en cours", value=lignes_en_cours, inline=False)
+    embed.add_field(name="🏅 Quêtes terminées", value=lignes_terminees, inline=False)
+
+    await ctx.send(embed=embed)
 
 # 🚀 Lancement du bot
 bot.run(os.getenv("DISCORD_TOKEN"))
