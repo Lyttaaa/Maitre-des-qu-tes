@@ -276,6 +276,7 @@ async def on_message(message):
         return
 
     if isinstance(message.channel, discord.DMChannel):
+        user = message.author
         user_id = str(message.author.id)
         contenu = message.content.strip()
         quetes = charger_quetes()
