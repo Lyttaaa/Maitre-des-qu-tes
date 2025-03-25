@@ -1,4 +1,5 @@
 discord.py==2.3.2
 python-dotenv
 pymongo
-pip install apscheduler pytz
+apscheduler
+pytz
