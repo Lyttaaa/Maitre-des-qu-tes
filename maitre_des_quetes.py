@@ -108,6 +108,7 @@ class VueAcceptation(View):
             {
                 "$addToSet": {
                     "quetes": {
+                        "categorie": self.categorie
                         "id": self.quete["id"],
                         "nom": self.quete["nom"]
                     }
@@ -244,12 +245,17 @@ async def on_raw_reaction_add(payload):
             completed_collection.update_one(
                 {"_id": user_id},
                 {
-                    "$addToSet": {"quetes": {"id": quete["id"], "nom": quete["nom"]}},
-                    "$set": {"pseudo": user.name}
+                    "$addToSet": {
+                        "quetes": {
+                            "id": quete["id"],
+                            "nom": quete["nom"],
+                            "categorie": quete.get("categorie", "Inconnue")
+                         }
+                     },
+                     "$set": {"pseudo": user.name}
                 },
                 upsert=True
-            )
-
+             )
 
             utilisateurs.update_one(
                 {"_id": user_id},
@@ -299,11 +305,17 @@ async def on_message(message):
                 completed_collection.update_one(
                     {"_id": user_id},
                     {
-                        "$addToSet": {"quetes": {"id": quete["id"], "nom": quete["nom"]}},
-                        "$set": {"pseudo": user.name}
-                    },
-                    upsert=True
-                )
+                        "$addToSet": {
+                            "quetes": {
+                                "id": quete["id"],
+                                "nom": quete["nom"],
+                                "categorie": quete.get("categorie", "Inconnue")
+                    }
+                },
+                "$set": {"pseudo": user.name}
+            },
+            upsert=True
+        )
                 utilisateurs.update_one(
                     {"_id": user_id},
                     {
