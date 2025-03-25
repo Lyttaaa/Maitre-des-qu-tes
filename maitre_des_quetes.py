@@ -115,7 +115,7 @@ class VueAcceptation(View):
             {
                 "$addToSet": {
                     "quetes": {
-                        "categorie": self.categorie
+                        "categorie": self.categorie,
                         "id": self.quete["id"],
                         "nom": self.quete["nom"]
                     }
