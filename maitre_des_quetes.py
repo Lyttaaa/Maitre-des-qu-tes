@@ -346,63 +346,61 @@ async def on_message(message):
 @bot.command()
 async def mes_quetes(ctx):
     user_id = str(ctx.author.id)
-    nom_membre = ctx.author.display_name
+    toutes_quetes = [q for lst in charger_quetes().values() for q in lst]
 
-    toutes_quetes = {
-        q["id"]: {
-            "nom": q["nom"],
-            "categorie": categorie
-        }
-        for categorie, quetes in charger_quetes().items()
-        for q in quetes
+    user_accept = accepted_collection.find_one({"_id": user_id}) or {}
+    user_done = completed_collection.find_one({"_id": user_id}) or {}
+
+    quetes_accept = user_accept.get("quetes", [])
+    quetes_done = user_done.get("quetes", [])
+
+    # Convertir en sets d'IDs pour comparaison rapide
+    ids_accept = set(q["id"] if isinstance(q, dict) else q for q in quetes_accept)
+    ids_done = set(q["id"] if isinstance(q, dict) else q for q in quetes_done)
+
+    # Tri par catégorie
+    categories = {
+        "Quêtes Journalières": {"emoji": "🕘", "encours": [], "terminees": []},
+        "Quêtes Simples": {"emoji": "📦", "encours": [], "terminees": []},
+        "Quêtes de Recherche": {"emoji": "🔍", "encours": [], "terminees": []},
+        "Quêtes Énigmes": {"emoji": "🧩", "encours": [], "terminees": []}
     }
 
-    # Emojis par catégorie
-    EMOJI_PAR_CATEGORIE = {
-        "Quêtes Journalières": "🕘",
-        "Quêtes Simples": "📦",
-        "Quêtes de Recherche": "🔍",
-        "Quêtes Énigmes": "🧩"
-    }
+    for quete in toutes_quetes:
+        cat = quete.get("categorie", None)
+        if not cat or cat not in categories:
+            continue
 
-    def formatter(quetes_liste):
-        cat_dict = {cat: [] for cat in EMOJI_PAR_CATEGORIE}
-        for q in quetes_liste:
-            q_id = q["id"] if isinstance(q, dict) else q
-            info = toutes_quetes.get(q_id)
-            if not info:
-                continue
-            cat = info["categorie"]
-            ligne = f"• {q_id} – {info['nom']}"
-            cat_dict[cat].append(ligne)
-
-        lignes = []
-        for cat, emoji in EMOJI_PAR_CATEGORIE.items():
-            lignes.append(f"{emoji} __{cat.split()[-1]}__ :")
-            lignes.extend(cat_dict[cat] or [])
-        return "\n".join(lignes)
-
-    accepted = accepted_collection.find_one({"_id": user_id})
-    completed = completed_collection.find_one({"_id": user_id})
-
-    quetes_en_cours = accepted.get("quetes", []) if accepted else []
-    quetes_terminees = completed.get("quetes", []) if completed else []
+        ligne = f"• {quete['id']} – {quete['nom']}"
+        if quete["id"] in ids_done:
+            categories[cat]["terminees"].append(ligne)
+        elif quete["id"] in ids_accept:
+            categories[cat]["encours"].append(ligne)
 
     embed = discord.Embed(
-        title=f"📘 **QUETES DE {nom_membre}**",
-        color=0xA97458  # Marron doux
-    )
-    embed.add_field(
-        name="📜 Quêtes en cours",
-        value=formatter(quetes_en_cours) or "Aucune 📭",
-        inline=False
-    )
-    embed.add_field(
-        name="🏅 Quêtes terminées",
-        value=formatter(quetes_terminees) or "Aucune 🔍",
-        inline=False
+        title=f"📘 **Quêtes de {ctx.author.display_name}**",
+        color=0xA86E2A  # Marron
     )
 
+    # 📜 Quêtes en cours
+    description = "📜 **Quêtes en cours**\n"
+    for cat, data in categories.items():
+        description += f"{data['emoji']} __{cat.replace('Quêtes ', '')} :__\n"
+        if data["encours"]:
+            description += "\n".join(data["encours"]) + "\n"
+        else:
+            description += "*Aucune*\n"
+
+    # 🏅 Quêtes terminées
+    description += "\n🏅 **Quêtes terminées**\n"
+    for cat, data in categories.items():
+        description += f"{data['emoji']} __{cat.replace('Quêtes ', '')} :__\n"
+        if data["terminees"]:
+            description += "\n".join(data["terminees"]) + "\n"
+        else:
+            description += "*Aucune*\n"
+
+    embed.description = description
     await ctx.send(embed=embed)
 
 # 🚀 Lancement du bot
