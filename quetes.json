@@ -58,7 +58,7 @@
       "resume": "L’Aubergiste a besoin d’ingrédients pour sa fameuse omelette champêtre.",
       "description": "L’Aubergiste t’a glissé un mot, entre deux pintes : « Mes champignons sont en retard, et j’ai une omelette à préparer avant minuit. Si tu les trouves… » Elle t’a adressé un clin d’œil complice. Tu sais ce qu’il te reste à faire.",
       "type": "reaction",
-      "details_mp": "L’Aubergiste a besoin d’ingrédients pour sa fameuse omelette champêtre.\n\n👉 Objectif :\nSalue l’aubergiste au canal **comptoir** et indique-lui que tu as une livraison de champignons pour lui.\n\nTon message doit contenir : `Bonjour, @Aubergiste, livraison, champignon",
+      "details_mp": "L’Aubergiste a besoin d’ingrédients pour sa fameuse omelette champêtre.\n\n👉 Objectif :\nSalue l’aubergiste au canal **comptoir** et indique-lui que tu as une livraison de champignons pour lui. Puis réais à son message avec 🍄 pour valider la livraison.\n\nTon message doit contenir : `Bonjour, @Aubergiste, livraison, champignon",
       "action": "reaction",
       "emoji": "🍄",
       "pnj": "Aubergiste",
