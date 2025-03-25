@@ -12,6 +12,8 @@ def ids_quetes(liste):
     return [q["id"] if isinstance(q, dict) else q for q in liste]
 
 def normaliser(texte):
+    if not isinstance(texte, str):
+        return ""
     texte = texte.lower().strip()
     texte = unicodedata.normalize("NFKD", texte)
     texte = ''.join(c for c in texte if not unicodedata.combining(c))
