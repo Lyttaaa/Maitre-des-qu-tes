@@ -109,7 +109,7 @@
       "resume": "Un ancien texte évoque une race discrète vivant dans les sous-bois...",
       "enonce": "En forêt, tu as croisé une silhouette à demi dissimulée par la brume et la mousse. Une coiffe rouge, une cape en haillons, un sac à dos bien rempli, un bâton incrusté de spores. Il t’a regardé sans dire un mot… puis disparu.",
       "type": "texte",
-      "details_mp": "Peux-tu retrouver quel est le nom de cette créature?",
+      "details_mp": "Peux-tu retrouver quel est le nom de cette créature? (https://www.worldanvil.com/w/lumharel-lynabracadabra)",
       "reponse_attendue": "Dûnpithar",
       "recompense": 4
     },
@@ -119,13 +119,13 @@
       "resume": "Un ancien texte évoque une race discrète vivant dans les sous-bois...",
       "enonce": "Au détour d’un campement abandonné, tu trouves un carnet. Les pages racontent des voyages insensés, des créatures bizarres, et toujours la signature au bas des pages : « J. le téméraire ».",
       "type": "texte",
-      "details_mp": "C'est un très bon ami, quel est son nom?",
+      "details_mp": "C'est un très bon ami, quel est son nom? (https://www.worldanvil.com/w/lumharel-lynabracadabra)",
       "reponse_attendue": "Jimbo",
       "recompense": 4
     },
     {
       "id": "QE003",
-      "nom": "Évènement flamboyant 🔥",
+      "nom": "Évènement Flamboyant 🔥",
       "resume": "Un ancien texte évoque une race discrète vivant dans les sous-bois...",
       "enonce": "Un parchemin roulé glissé dans ton sac sans que tu t’en rendes compte. Il sent la suie et la cendre. « Quand le feu embrasse la saison nouvelle, les lanternes dansent dans la nuit de Vaekirn… »",
       "type": "texte",
@@ -137,7 +137,7 @@
       "id": "QE004",
       "nom": "Puissants Dirigeants ✊",
       "resume": "Un ancien texte évoque une race discrète vivant dans les sous-bois...",
-      "enonce": "Ils ne portent pas de couronnes, mais leur influence est partout. Un parchemin signé par eux a plus de poids que n’importe quel décret royal. Sept sièges. Sept voix. Chaque guilde, une puissance. Ensemble, ils façonnent les décisions dans l’ombre de la grande salle aux vitraux dorés.",
+      "enonce": "Ils ne portent pas de couronnes, mais leur influence est partout. Un parchemin signé par eux a plus de poids que n’importe quel décret royal. Sept sièges. Sept voix. Chaque guilde, une puissance. Ensemble, ils façonnent les décisions dans l’ombre de la grande salle aux vitraux dorés. (https://www.worldanvil.com/w/lumharel-lynabracadabra)",
       "type": "texte",
       "details_mp": "Qui sont-ils?",
       "reponse_attendue": "Conseil des Guildes",
