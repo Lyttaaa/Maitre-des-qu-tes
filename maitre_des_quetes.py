@@ -7,6 +7,9 @@ from pymongo import MongoClient
 from random import choice
 import re
 import unicodedata
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+import pytz
 
 def ids_quetes(liste):
     return [q["id"] if isinstance(q, dict) else q for q in liste]
@@ -402,6 +405,29 @@ async def mes_quetes(ctx):
 
     embed.description = description
     await ctx.send(embed=embed)
+
+@bot.event
+async def on_ready():
+    print(f"{bot.user} est prêt(e) !")
+
+    paris = pytz.timezone("Europe/Paris")
+    scheduler = AsyncIOScheduler(timezone=paris)
+
+    scheduler.add_job(
+        lambda: bot.loop.create_task(poster_quetes_automatique()),
+        CronTrigger(day_of_week='mon', hour=10, minute=30)
+    )
+
+    scheduler.start()
+    
+async def poster_quetes_automatique():
+    channel = bot.get_channel(CHANNEL_ID)
+    # simulateur de contexte pour réutiliser ta fonction existante
+    class DummyCtx:
+        def __init__(self, channel):
+            self.channel = channel
+    await poster_quetes(DummyCtx(channel))
+
 
 # 🚀 Lancement du bot
 bot.run(os.getenv("DISCORD_TOKEN"))
