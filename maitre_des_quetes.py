@@ -408,16 +408,11 @@ async def mes_quetes(ctx):
 
 @bot.event
 async def on_ready():
-    print(f"{bot.user} est prêt(e) !")
+    print(f"✅ Le bot est prêt : {bot.user}")
+    scheduler = AsyncIOScheduler(timezone=pytz.timezone("Europe/Paris"))
 
-    paris = pytz.timezone("Europe/Paris")
-    scheduler = AsyncIOScheduler(timezone=paris)
-
-    scheduler.add_job(
-        lambda: bot.loop.create_task(poster_quetes_automatique()),
-        CronTrigger(day_of_week='mon', hour=10, minute=30)
-    )
-
+    # Publier les quêtes tous les lundis à 10h30
+    scheduler.add_job(poster_et_annonce_quetes, CronTrigger(day_of_week='mon', hour=10, minute=30))
     scheduler.start()
     
 async def poster_quetes_automatique():
@@ -428,6 +423,20 @@ async def poster_quetes_automatique():
             self.channel = channel
     await poster_quetes(DummyCtx(channel))
 
+async def poster_et_annonce_quetes():
+    channel_quetes = bot.get_channel(CHANNEL_ID)  # ton channel #🎯tableau-des-quetes
+    channel_annonce = bot.get_channel(ID_DU_CHANNEL_ANNONCE)  # remplace par l’ID du #📣annonce
+
+    ctx_faux = type("Ctx", (), {"send": lambda self, m: None})()  # simule un ctx bidon pour `poster_quetes`
+    await poster_quetes(ctx_faux)
+
+    # Message d’annonce RP
+    message = (
+        "👋 Oye Oye! @everyone 🥾 de Lumharel, les Quêtes **Journalières** & **Hebdomadaires** "
+        "ont été mises à jour sur le <#1352143818929078322> !!\n"
+        "En vous souhaitant une excellente semaine chers.ères ami.es, puissent les Souffles vous être favorables 🌬️ !"
+    )
+    await channel_annonce.send(message)
 
 # 🚀 Lancement du bot
 bot.run(os.getenv("DISCORD_TOKEN"))
