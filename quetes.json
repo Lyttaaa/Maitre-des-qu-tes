@@ -67,7 +67,7 @@
       "reponse_attendue": null,
       "recompense": 7
     },
-	{
+    {
       "id": "QI004",
       "nom": "L’Saltimbanque de Rue 🎭",
       "resume": "Un Saltimbanque cherche un acolyte pour sa prochaine représentation.",
@@ -81,7 +81,7 @@
       "reponse_attendue": null,
       "recompense": 9
     },
-	{
+    {
       "id": "QI005",
       "nom": "Les Cartes Cachées ♠️",
       "resume": "Un jeu de cartes douteux se déroule à la **🍻table-du-fond**, et tu es sollicité pour un petit coup de pouce.",
@@ -109,7 +109,7 @@
       "reponse_attendue": null,
       "recompense": 10
     },
-	{
+    {
       "id": "QI007",
       "nom": "Les Mots Oubliés 🗣️",
       "resume": "Un écrivain cherche quelqu'un pour retrouver des documents importants.",
@@ -122,7 +122,7 @@
       "reponse_attendue": null,
       "recompense": 5
     },
-	{
+    {
       "id": "QI008",
       "nom": "L’Offrande Manquante 🙏",
       "resume": "Un fidèle oublie son offrande quotidienne et panique.",
@@ -135,7 +135,7 @@
       "reponse_attendue": null,
       "recompense": 3
     },
-	{
+    {
       "id": "QI009",
       "nom": "La Mélodie du Cœur 💛",
       "resume": "Un musicien de rue joue pour ceux qui n’ont plus rien…",
@@ -148,7 +148,7 @@
       "reponse_attendue": null,
       "recompense": -5
     },
-	{
+    {
       "id": "QI010",
       "nom": "Un Message en Retard 📮",
       "resume": "Une jeune messagère n’a pas pu livrer un mot important. Elle a besoin d’aide.",
@@ -162,7 +162,7 @@
       "reponse_attendue": null,
       "recompense": 4
     },
-	{
+    {
       "id": "QI011",
       "nom": "L’Œuvre Sans Nom 🎨",
       "resume": "Une artiste en quête de titre cherche ton regard neuf.",
@@ -175,7 +175,7 @@
 	  "channel": "œuvres-des-voyageurseuses",
       "reponse_attendue": null,
       "recompense": 4
-    },
+    }
   ],
   "Quêtes de Recherche": [
     {
@@ -211,7 +211,7 @@
       "reponse_attendue": "Philtre de l'Esprit",
       "recompense": 7
     },
-	{
+    {
       "id": "QE004",
       "nom": "Puissants Dirigeants ✊",
       "resume": "",
@@ -221,8 +221,8 @@
       "reponse_attendue": "Conseil des Guildes",
       "recompense": 5
     },
-	{
-	  "id": "QE005",
+    {
+      "id": "QE005",
       "nom": "Entrevue en forêt 🌲",
       "resume": "Un chercheur du savoir cherche des indices sur une créature mystérieuse aperçue dans la forêt.",
       "enonce": "Un chercheur, visiblement inquiet, te montre une illustration d’une créature étrange. « J’ai vu cette créature dans la forêt de Loth'Belhain, au nord de Molgel. Elle portait une coiffe rouge, un baton de mage et un sac à dos bien rempli. J’ai entendu dire que c’était un Myrvûl, mais je n’en suis pas sûr.»",
@@ -231,7 +231,7 @@
       "reponse_attendue": "Dûnpithar",
       "recompense": 6
     },
-	{
+    {
       "id": "QE006",
       "nom": "Souvenir d’un explorateur 🧭",
       "resume": "Un carnet abandonné raconte des voyages fous et une signature familière…",
@@ -241,7 +241,7 @@
       "reponse_attendue": "Jimbo",
       "recompense": 5
     },
-	{
+    {
       "id": "QE007",
       "nom": "Artefact des Profondeurs ✨",
       "resume": "Un érudit recherche des informations sur une baguette magique découverte sur les côtes de Lumharel.",
@@ -251,7 +251,7 @@
       "reponse_attendue": "Loreleil",
       "recompense": 5
     },
-	{
+    {
       "id": "QE008",
       "nom": "La Porte de l'Océan 🌊",
       "resume": "Un voyageur perdu cherche de l’aide pour identifier une ville.",
@@ -261,7 +261,7 @@
       "reponse_attendue": "Etheld",
       "recompense": 6
     },
-	{
+    {
       "id": "QE009",
       "nom": "Le Verre de Trop 🍺",
       "resume": "Après une nuit bien arrosée, tu ne te rappelles plus du nom de ce lieu...",
@@ -271,7 +271,7 @@
       "reponse_attendue": "Baie Crochue",
       "recompense": 5
     },
-	{
+    {
       "id": "QE010",
       "nom": "Les Toits de Garchezdîn 🏠",
       "resume": "Tu as remarqué les différentes couleurs des toits à Garchezdîn, mais tu ne sais pas ce qu’elles signifient.",
@@ -285,127 +285,127 @@
   "Quêtes Énigmes": [
   {
       "id": "QE001",
-	  "nom": "Lueur dans la nuit 🌒",
+      "nom": "Lueur dans la nuit 🌒",
       "resume": "Un vieux poème griffonné sur un mur d’auberge attire ton regard...",
-      "enonce": "« Je veille sans bruit,  
-      Mon visage change chaque nuit.  
-      Parfois ronde, parfois fuyante,  
-      On me cherche, je suis absente. »",
+      "enonce": "« Je veille sans bruit",  
+      "Mon visage change chaque nuit.", 
+      "Parfois ronde, parfois fuyante",  
+      "On me cherche, je suis absente. »",
       "type": "texte",
       "details_mp": "Quel est ce mot qui éclaire les ténèbres ?",
       "reponse_attendue": "lune",
       "recompense": 3
     },
-	{
+    {
       "id": "QE002",
       "nom": "Sous la dalle poussiéreuse 🗝️",
       "resume": "Tu explores une crypte oubliée, le silence y est pesant...",
-      "enonce": "« Je suis la fin d’un secret,  
-      Sans moi, nul accès.  
-      Je suis dentée, mais ne mords jamais,  
-      Je tourne, et l’ombre cède. »",
+      "enonce": "« Je suis la fin d’un secret",  
+      "Sans moi, nul accès.", 
+      "Je suis dentée, mais ne mords jamais",  
+      "Je tourne, et l’ombre cède. »",
       "type": "texte",
       "details_mp": "Quel objet cherche-t-on souvent dans les recoins ?",
       "reponse_attendue": "clé",
       "recompense": 3
     },
-	{
+    {
       "id": "QE003",
       "nom": "Reflet d’une présence 👤",
       "resume": "Une silhouette te suit, mais tu ne vois rien derrière toi...",
-      "enonce": "« Je m’étends quand la lumière se pose,  
-      Je m’efface dans la nuit close.  
-      Je n’ai ni souffle, ni voix,  
-      Mais toujours je reste près de toi. »",
+      "enonce": "« Je m’étends quand la lumière se pose",  
+      "Je m’efface dans la nuit close.",  
+      "Je n’ai ni souffle, ni voix",  
+      "Mais toujours je reste près de toi. »",
       "type": "texte",
       "details_mp": "Qui suis-je ?",
       "reponse_attendue": "ombre",
       "recompense": 3
     },
-	{
+    {
       "id": "QE004",
       "nom": "Le Temps fragmenté 🌀",
       "resume": "Les rouages tournent en silence autour d’un grand disque.",
-      "enonce": "« Chaque jour, je te suis sans jamais te rattraper. 
-	  Les Souffles m’organisent, les lunes me rythment. 
-	  Je suis le fil du temps tissé à la main. »",
+      "enonce": "« Chaque jour, je te suis sans jamais te rattraper.", 
+      "Les Souffles m’organisent, les lunes me rythment.", 
+      "Je suis le fil du temps tissé à la main. »",
       "type": "texte",
       "details_mp": "De quoi s’agit-il ?",
       "reponse_attendue": "calendrier",
       "recompense": 3
     },
-	{
+    {
       "id": "QE005",
       "nom": "L'Ombre qui Suivait 👻",
       "resume": "Des voix résonnent dans ta tête. Elles ne sont pas hostiles.",
-      "enonce": "« On ne me voit pas, mais je veille. 
-	  Je murmure dans les rêves, j’éclaire dans le doute. 
-	  Certains disent que je flotte, d’autres que je hante. »",
-	  "type": "texte",
-	  "details_mp": "Que suis-je?",
+      "enonce": "« On ne me voit pas, mais je veille.", 
+      "Je murmure dans les rêves, j’éclaire dans le doute.", 
+      "Certains disent que je flotte, d’autres que je hante. »",
+      "type": "texte",
+      "details_mp": "Que suis-je?",
       "reponse_attendue": "esprit",
       "recompense": 3
     },
-	{
+    {
       "id": "QE006",
       "nom": "Frappe braisée 🌋",
       "resume": "",
-      "enonce": "« On entend son souffle de feu résonner dans les creux de Khargrun. 
-	  Il dompte le métal, façonne l’acier, et grave le destin dans le fer encore chaud. »",
-	  "type": "texte",
-	  "details_mp": "Qui suis-je?",
+      "enonce": "« On entend son souffle de feu résonner dans les creux de Khargrun.", 
+      "Il dompte le métal, façonne l’acier, et grave le destin dans le fer encore chaud. »",
+      "type": "texte",
+      "details_mp": "Qui suis-je?",
       "reponse_attendue": "forgeron",
       "recompense": 3
     },
-	{
+    {
       "id": "QE007",
       "nom": "Le Sourire de l'Automne 🍂",
       "resume": "Une forme familière t’attend entre les feuilles mortes...",
-      "enonce": "« Ronde, dodue, parfois creusée,
-	  Je veille dans les clairières d’automne. 
-	  Mon sourire peut être chaleureux… ou inquiétant. »",
-	  "type": "texte",
-	  "details_mp": "Que suis-je?",
+      "enonce": "« Ronde, dodue, parfois creusée",
+      "Je veille dans les clairières d’automne.", 
+      "Mon sourire peut être chaleureux… ou inquiétant. »",
+      "type": "texte",
+      "details_mp": "Que suis-je?",
       "reponse_attendue": "citrouille",
       "recompense": 3
     },
-	{
+    {
       "id": "QE008",
       "nom": "Les Voix de Garchezdîn 🏙️",
       "resume": "Dans la ville animée de Garchezdîn, les étals regorgent de mystères et de marchandises rares.",
-      "enonce": "« On me traverse sans jamais m’arrêter,
-	  Les bruits et les cris m’accompagnent sans fin.
-	  Je ne suis qu’un lieu, mais je suis un monde,
-	  Où les trésors se cachent entre les rues et les ponts. »",
-	  "type": "texte",
-	  "details_mp": "Que suis-je?",
+      "enonce": "« On me traverse sans jamais m’arrêter",
+      "Les bruits et les cris m’accompagnent sans fin.",
+      "Je ne suis qu’un lieu, mais je suis un monde",
+      "Où les trésors se cachent entre les rues et les ponts. »",
+      "type": "texte",
+      "details_mp": "Que suis-je?",
       "reponse_attendue": "marché",
       "recompense": 3
     },
-	{
+    {
       "id": "QE009",
       "nom": "Le Rythme des Saisons 🌦️",
       "resume": "Parmi les vents anciens qui traversent Lumharel, l’un d’eux ne se voit ni ne s’entend… mais rythme le temps et les saisons.",
-      "enonce": "« Invisible mais vital, je rythme les jours et les saisons. 
-	  Dans le Cycle, je me décline, tantôt doux, tantôt brûlant. 
-	  Je suis la respiration même de Lumharel. »",
-	  "type": "texte",
-	  "details_mp": "Que suis-je?",
+      "enonce": "« Invisible mais vital, je rythme les jours et les saisons.", 
+      "Dans le Cycle, je me décline, tantôt doux, tantôt brûlant.", 
+      "Je suis la respiration même de Lumharel. »",
+      "type": "texte",
+      "details_mp": "Que suis-je?",
       "reponse_attendue": "souffle",
       "recompense": 3
     },
-	{
+    {
       "id": "QE010",
       "nom": "L’Étincelle du Four ✨",
       "resume": "Un artefact mystérieux, découvert près des vagues, portant la magie d’un ancien peuple, mais aussi celle d’une recette oubliée.",
-      "enonce": "« Trouvée entre mer et ciel,
-      Je suis la lueur d’un secret bien gardé.
-      Sous la main du boulanger, je prends vie,
-      Et aux âmes perdues, je dévoile mon sort.
-      Les vagues m’ont portée, mais mes origines sont d’un autre temps,
-      Un ancien peuple m’a léguée à celui qui sait. »",
-	  "type": "texte",
-	  "details_mp": "Que suis-je?",
+      "enonce": "« Trouvée entre mer et ciel",
+      "Je suis la lueur d’un secret bien gardé.",
+      "Sous la main du boulanger, je prends vie",
+      "Et aux âmes perdues, je dévoile mon sort.",
+      "Les vagues m’ont portée, mais mes origines sont d’un autre temps",
+      "Un ancien peuple m’a léguée à celui qui sait. »",
+      "type": "texte",
+      "details_mp": "Que suis-je?",
       "reponse_attendue": "baguette",
       "recompense": 3
     }
