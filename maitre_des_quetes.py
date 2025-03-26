@@ -176,8 +176,10 @@ def get_quete_non_postee(categorie, quetes_possibles):
     deja_postees = doc["postees"] if doc else []
 
     print(f"🗃️ Déjà postées : {deja_postees}")
+    print(f"📋 Total dans le JSON : {len(quetes_possibles)}")
 
     restantes = [q for q in quetes_possibles if q["id"] not in deja_postees]
+    print(f"🧮 Restantes à tirer : {len(restantes)}")
 
     # Si tout a été posté, on reset
     if not restantes:
@@ -185,6 +187,7 @@ def get_quete_non_postee(categorie, quetes_possibles):
         restantes = quetes_possibles
         deja_postees = []
 
+    # Choisir la quête
     quete = choice(restantes)
     print(f"🎯 Quête choisie : {quete['id']} - {quete['nom']}")
 
