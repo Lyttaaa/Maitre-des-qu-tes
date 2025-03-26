@@ -30,7 +30,7 @@ def normaliser(texte):
 EMOJI_PAR_CATEGORIE = {
     "Quêtes Journalières": "🕘",
     "Quêtes Interactions": "🕹️",
-    "Quêtes de Recherches": "🔍",
+    "Quêtes Recherches": "🔍",
     "Quêtes Énigmes": "🧩"
 }
 
@@ -213,10 +213,10 @@ async def poster_quetes(ctx):
         await envoyer_quete(channel, quete_interaction, "Quêtes Interactions")
 
     # 🔍 Quête de recherches avec rotation
-    recherches = quetes_par_type.get("Quêtes de Recherches", [])
+    recherches = quetes_par_type.get("Quêtes Recherches", [])
     if recherches:
         quete_recherches = get_quete_non_postee("Quêtes de Recherches", recherches)
-        await envoyer_quete(channel, quete_recherches, "Quêtes de Recherches")
+        await envoyer_quete(channel, quete_recherches, "Quêtes Recherches")
 
     # 🧩 Quête énigme avec rotation
     enigmes = quetes_par_type.get("Quêtes Énigmes", [])
@@ -368,7 +368,7 @@ async def mes_quetes(ctx):
     categories = {
         "Quêtes Journalières": {"emoji": "🕘", "encours": [], "terminees": []},
         "Quêtes Interactions": {"emoji": "🕹️", "encours": [], "terminees": []},
-        "Quêtes de Recherches": {"emoji": "🔍", "encours": [], "terminees": []},
+        "Quêtes Recherches": {"emoji": "🔍", "encours": [], "terminees": []},
         "Quêtes Énigmes": {"emoji": "🧩", "encours": [], "terminees": []}
     }
 
