@@ -169,18 +169,24 @@ class VueAcceptation(View):
 def get_quete_non_postee(categorie, quetes_possibles):
     collection_rotation = db.rotation_quetes
 
+    print(f"\n🔄 Catégorie demandée : {categorie}")
+
     # Récupérer les quêtes déjà postées pour la catégorie
     doc = collection_rotation.find_one({"_id": categorie})
     deja_postees = doc["postees"] if doc else []
+
+    print(f"🗃️ Déjà postées : {deja_postees}")
 
     restantes = [q for q in quetes_possibles if q["id"] not in deja_postees]
 
     # Si tout a été posté, on reset
     if not restantes:
+        print("♻️ Toutes les quêtes ont été postées. Réinitialisation de la rotation.")
         restantes = quetes_possibles
         deja_postees = []
 
     quete = choice(restantes)
+    print(f"🎯 Quête choisie : {quete['id']} - {quete['nom']}")
 
     # Mettre à jour MongoDB
     collection_rotation.update_one(
@@ -189,6 +195,7 @@ def get_quete_non_postee(categorie, quetes_possibles):
         upsert=True
     )
 
+    print(f"✅ Mise à jour MongoDB pour '{categorie}' avec : {quete['id']}")
     return quete
     
 @bot.command()
