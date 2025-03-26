@@ -25,47 +25,157 @@
       "recompense": 2
     }
   ],
-  "Quêtes Simples": [
+  "Quêtes Inerractions": [
     {
-      "id": "QS001",
+      "id": "QI001",
       "nom": "La miche du matin 🥐",
       "resume": "Le boulanger local a besoin d’un coup de main…",
       "description": "Le boulanger de Molgel, toujours jovial, t’a lancé un clin d’œil entre deux fournées. « Hé, aventurier ! Tu m’donnes un coup de main ? » Sa miche du matin est en retard. Il t’attend, panié en main.",
       "type": "reaction",
-      "details_mp": "Salue le boulanger sur le canal **grand-place** et réagis à son message avec 🥖 pour lui apporter ton aide !\n\nTon message doit contenir : `Bonjour, @Boulanger, livraison",
+      "details_mp": "Le Boulanger à besoin que tu lui livre sa Miche.\n\n❗ Instructions :\nSalue le boulanger sur le canal **⛲grand-place** et réagis à son message avec 🥖 pour lui apporter ton aide !\n\nTon message doit contenir : `Bonjour, @Boulanger, livraison",
       "action": "reaction",
       "emoji": "🥖",
       "pnj": "Boulanger",
       "channel": "grand-place",
       "reponse_attendue": null,
-      "recompense": 9
+      "recompense": 6
     },
     {
-      "id": "QS002",
+      "id": "QI002",
       "nom": "Voix des Anciens 🏛️",
       "resume": "Les Anciens murmurent à ceux qui savent écouter…",
       "description": "Assis sur le banc de pierre, tu as senti une brise étrange. Elle murmurait des mots oubliés. Les Rumeurs du Monde s'agitent… Les Anciens veulent être entendus, mais seuls ceux qui prêtent l’oreille peuvent les comprendre.",
       "type": "reaction",
-      "details_mp": "Va dans **rumeurs-du-monde** et réagis avec l’émoji 🔮 à l’un des murmures récents.",
+      "details_mp": "Va dans **💨rumeurs-du-monde** et réagis avec l’émoji 🔮 à l’un des murmures récents.",
       "action": "reaction",
       "emoji": "🔮",
+	  "channel": "rumeurs-du-monde",
       "reponse_attendue": null,
       "recompense": 3
     },
     {
-      "id": "QS003",
+      "id": "QI003",
       "nom": "Omelette de Minuit 🍳",
       "resume": "L’Aubergiste a besoin d’ingrédients pour sa fameuse omelette champêtre.",
       "description": "L’Aubergiste t’a glissé un mot, entre deux pintes : « Mes champignons sont en retard, et j’ai une omelette à préparer avant minuit. Si tu les trouves… » Elle t’a adressé un clin d’œil complice. Tu sais ce qu’il te reste à faire.",
       "type": "reaction",
-      "details_mp": "L’Aubergiste a besoin d’ingrédients pour sa fameuse omelette champêtre.\n\n👉 Objectif :\nSalue l’aubergiste au canal **comptoir** et indique-lui que tu as une livraison de champignons pour lui. Puis réais à son message avec 🍄 pour valider la livraison.\n\nTon message doit contenir : `Bonjour, @Aubergiste, livraison, champignon",
+      "details_mp": "L’Aubergiste a besoin d’ingrédients pour sa fameuse omelette champêtre.\n\n❗ Instructions :\nSalue l’aubergiste au canal **💬comptoir** et indique-lui que tu as une livraison de champignons pour lui. Puis réais à son message avec 🍄 pour valider la livraison.\n\nTon message doit contenir : `Bonjour, @Aubergiste, livraison, champignon",
       "action": "reaction",
-      "emoji": "🍄",
+      "emoji": "🍄","
       "pnj": "Aubergiste",
       "channel": "comptoir",
       "reponse_attendue": null,
+      "recompense": 7
+    },
+	{
+      "id": "QI004",
+      "nom": "L’Saltimbanque de Rue 🎭",
+      "resume": "Un Saltimbanque cherche un acolyte pour sa prochaine représentation.",
+      "description": "Un Saltimbanque de rue te repère et te propose un rôle. « Tu veux bien jouer pour moi ? J’ai une idée en tête, mais il me manque le.a comédien.e parfait.e. Quoi? Tu acceptes? Super!! Voici le script et retrouve moi sur la **⛲grand-place** pour le spectacle !!»",
+      "type": "reaction",
+      "details_mp": "Le Saltimbanque à besoin de toi pour jouer un rôle.\n\n❗ Instructions :\nApprends le script, va sur la **⛲grand-place** et récite ta tirade. Puis réais à son message avec 🎭 pour valider la quêtes.\n\nScript: `O noble âme, prête à être figée dans le marbre du temps, viens et fais de toi la muse de mon regard, car dans ton ombre se cache l’inspiration qui m’échappe !",
+      "action": "reaction",
+      "emoji": "🎭",
+      "pnj": "Saltimbanque",
+      "channel": "grand-place",
+      "reponse_attendue": null,
       "recompense": 9
-    }
+    },
+	{
+      "id": "QI005",
+      "nom": "Les Cartes Cachées ♠️",
+      "resume": "Un jeu de cartes douteux se déroule à la "Table du Fond", et tu es sollicité pour un petit coup de pouce.",
+      "description": "À la **🍻table-du-fond**, l'atmosphère est un peu plus tendue que d’habitude. Un homme en manteau sombre t’interpelle discrètement. « Tu vois, ces cartes-là… Elles sont légèrement manipulées. Ce n’est pas tout à fait un jeu équitable, et j’ai besoin de quelqu’un pour faire diversion. Si tu m’aides à faire en sorte que les cartes tombent de mon côté, une part des gains sera à toi. »",
+      "type": "reaction",
+      "details_mp": "L'Homme Mystérieux veux que tu déconcentre son adversaire pour qu'il fasse son tour de passe passe.\n\n❗ Instructions :\nApproche toi discrètement de la **🍻table-du-fond** et fait semblant de trébucher pour distraire son adversaire. Puis réagis à son message avec 🃏 pour valider la quêtes.\n\nTon message doit contenir : `Oula, Ouille, maladroit/maladroite, trébuché",
+      "action": "reaction",
+      "emoji": "🃏",
+      "pnj": "Homme Mystérieux",
+      "channel": "table-du-fond",
+      "reponse_attendue": null,
+      "recompense": 20
+    },
+	{
+      "id": "QI006",
+      "nom": "Les Vins Interdits 🍷",
+      "resume": "Un contrebandier de vin cherche à passer discrètement une cargaison d'alcool hors-la-loi.",
+      "description": "Un contrebandier avec un regard furtif t’approche au comptoir de l’auberge. « J’ai de l’alcool interdit que je dois vendre en dehors des règles. Tu pourrais m’aider à le faire sortir de la ville sans attirer l’attention des gardes ? »",
+      "type": "reaction",
+      "details_mp": "Le contrebandier souhaite que tu l'aide à sortir sa cargaison hors de la ville sans se faire prendre.\n\n❗ Instructions :\nRetrouve le au **💬comptoir** et fait lui signe que tu accepte. Puis réagis à son message avec 🍾 pour valider la quêtes.\n\nTon message doit contenir: `psst, @Contrebandier, accepte, aider, cargaison",
+      "action": "reaction",
+      "emoji": "🍾",
+      "pnj": "Contrebandier",
+      "channel": "comptoir",
+      "reponse_attendue": null,
+      "recompense": 10
+    },
+	{
+      "id": "QI007",
+      "nom": "Les Mots Oubliés 🗣️",
+      "resume": "Un écrivain cherche quelqu'un pour retrouver des documents importants.",
+      "description": "Un écrivain d’anciennes légendes te trouve dans la rue. « Je cherche des documents qui ont disparu des archives. Ils sont importants, et je ne peux pas aller moi-même les chercher. Peux-tu m’aider à les retrouver ? »",
+      "type": "reaction",
+      "details_mp": "L'Écrivain souhaite que tu l'aide à retrouver ce fameux document dans les archives.\n\n❗ Instructions :\nRends toi à la **🌟📖LA BIBLIOTHÈQUE -> 📝site-updates** Puis réagis à n'importe quel update d'article avec 🔍 pour valider la quête.",
+      "action": "reaction",
+      "emoji": "🔍",
+	  "channel": "site-updates",
+      "reponse_attendue": null,
+      "recompense": 5
+    },
+	{
+      "id": "QI008",
+      "nom": "L’Offrande Manquante 🙏",
+      "resume": "Un fidèle oublie son offrande quotidienne et panique.",
+      "description": "Un fidèle essoufflé arrive au **🙏autels-des-divinités**. « J’ai oublié mon offrande ! Je ne peux pas laisser passer un jour sans honorer les Façonneurs… Tu pourrais la déposer pour moi ? »",
+      "type": "reaction",
+      "details_mp": "Le fidèle souhaite que tu fasse une offrendre pour lui car il a oublié la sienne. Tu es d'humeur généreuse, tu acceptes.\n\n❗ Instructions :\nRends toi aux **🙏autels-des-divinités** Puis réagis à n'importe quel autel avec 🌾 pour valider la quête.",
+      "action": "reaction",
+      "emoji": "🌾",
+	  "channel": "autels-des-divinités",
+      "reponse_attendue": null,
+      "recompense": 3
+    },
+	{
+      "id": "QI009",
+      "nom": "La Mélodie du Cœur 💛",
+      "resume": "Un musicien de rue joue pour ceux qui n’ont plus rien…",
+      "description": "Au détour de la grand-place, un musicien à la barbe grise joue un air doux, les yeux fermés. Son chapeau renversé devant lui n’a que quelques pièces. À ton passage, il rouvre un œil fatigué. « Quelques Lumes, juste assez pour manger ce soir… »",
+      "type": "reaction",
+      "details_mp": "Le musicien te demande des Lumes pour manger ce soir. Vos regards se sont croisés, tu ne peux pas fuir, tu reste un peu l'écouter, finalement c'est joli comme mélodie.\n\n❗ Instructions :\nRends toi sur la grand place, dit lui que ce qu'il joue est agréable. Puis réagis son message avec 👛 pour lui donner 5 Lumes et valider la quête.",
+      "action": "reaction",
+      "emoji": "👛",
+	  "channel": "grand-place",
+      "reponse_attendue": null,
+      "recompense": -5
+    },
+	{
+      "id": "QI010",
+      "nom": "Un Message en Retard 📮",
+      "resume": "Une jeune messagère n’a pas pu livrer un mot important. Elle a besoin d’aide.",
+      "description": "Essoufflée, une apprenti messagère t’arrête sur la **⛲grand-place**. « J’ai raté une livraison. C’était pour quelqu’un à la bibliothèque… Je n’ai plus le temps d’y aller. Tu peux y laisser un mot à ma place ? »",
+      "type": "reaction",
+      "details_mp": "La jeune messagère souhaite que tu laisse un message pour elle car elle est en retard.\n\n❗ Instructions :\nRends toi aux **🌀invocations**. Puis réagis à n'importe quels messages du @Réceptionniste avec 📮 pour lui donner le message et valider la quête.",
+      "action": "reaction",
+      "emoji": "📮",
+	  "pnj": "Réceptionniste",
+	  "channel": "invocations",
+      "reponse_attendue": null,
+      "recompense": 4
+    },
+	{
+      "id": "QI011",
+      "nom": "L’Œuvre Sans Nom 🎨",
+      "resume": "Une artiste en quête de titre cherche ton regard neuf.",
+      "description": "Une femme t’interpelle dans œuvres-des-voyageurs. « J’ai terminé ce tableau, mais… il me manque un nom. Peux-tu lui en offrir un ? Un mot, une idée, une sensation ? »",
+      "type": "reaction",
+      "details_mp": "L'artiste souhaite que tu l'aide à trouver un nom pour son dernier tableau.\n\n❗ Instructions :\nRends toi dans **🎨œuvres-des-voyageurseuses**. Propose à la peintre un nom pour sa peinture. Puis réagis à son message avec 🎨 valider la quête.\n\nTon message doit contenir: `Réfléchir, propose, titre",
+      "action": "reaction",
+      "emoji": "🎨",
+	  "pnj": "Peintre",
+	  "channel": "œuvres-des-voyageurseuses",
+      "reponse_attendue": null,
+      "recompense": 4
+    },
   ],
   "Quêtes de Recherche": [
     {
@@ -77,7 +187,7 @@
       "details_mp": "Selon la rumeur, une potion trouvée sur les côtes, aux reflets bleutés, a été achetée à un plongeur. Peux-tu retrouver son nom dans les archives ? (https://www.worldanvil.com/w/lumharel-lynabracadabra)\n\nRéponds moi quand tu auras trouvé !",
       "emoji": null,
       "reponse_attendue": "Extrait d'Atlante",
-      "recompense": 5
+      "recompense": 6
     },
     {
       "id": "QR002",
@@ -88,7 +198,7 @@
       "details_mp": "Le collectionneur Darghel a trouvé une fiole scellée contenant un liquide rouge profond. Elle dégage une chaleur étrange… Peux-tu retrouver son nom dans les archives ? (https://www.worldanvil.com/w/lumharel-lynabracadabra)\n\nRéponds moi quand tu auras trouvé !",
       "emoji": null,
       "reponse_attendue": "Fiole de Sang de Dragon",
-      "recompense": 5
+      "recompense": 6
     },
     {
       "id": "QR003",
@@ -100,48 +210,204 @@
       "emoji": null,
       "reponse_attendue": "Philtre de l'Esprit",
       "recompense": 7
+    },
+	{
+      "id": "QE004",
+      "nom": "Puissants Dirigeants ✊",
+      "resume": "",
+      "enonce": "Ils ne portent pas de couronnes, mais leur influence est partout. Un parchemin signé par eux a plus de poids que n’importe quel décret royal. Sept sièges. Sept voix. Chaque guilde, une puissance. Ensemble, ils façonnent les décisions dans l’ombre de la grande salle aux vitraux dorés. (https://www.worldanvil.com/w/lumharel-lynabracadabra)",
+      "type": "texte",
+      "details_mp": "Qui sont-ils?",
+      "reponse_attendue": "Conseil des Guildes",
+      "recompense": 5
+    },
+	{
+	  "id": "QE005",
+      "nom": "Entrevue en forêt 🌲",
+      "resume": "Un chercheur du savoir cherche des indices sur une créature mystérieuse aperçue dans la forêt.",
+      "enonce": "Un chercheur, visiblement inquiet, te montre une illustration d’une créature étrange. « J’ai vu cette créature dans la forêt de Loth'Belhain, au nord de Molgel. Elle portait une coiffe rouge, un baton de mage et un sac à dos bien rempli. J’ai entendu dire que c’était un Myrvûl, mais je n’en suis pas sûr.»",
+      "type": "texte",
+      "details_mp": "Peux-tu retrouver quel est le nom de cette créature? (https://www.worldanvil.com/w/lumharel-lynabracadabra)",
+      "reponse_attendue": "Dûnpithar",
+      "recompense": 6
+    },
+	{
+      "id": "QE006",
+      "nom": "Souvenir d’un explorateur 🧭",
+      "resume": "Un carnet abandonné raconte des voyages fous et une signature familière…",
+      "enonce": "Au détour d’un campement abandonné, tu trouves un carnet. Les pages racontent des voyages insensés, des créatures bizarres, et toujours la signature au bas des pages : « J. le téméraire ».",
+      "type": "texte",
+      "details_mp": "C'est un très bon ami, quel est son nom? (https://www.worldanvil.com/w/lumharel-lynabracadabra)",
+      "reponse_attendue": "Jimbo",
+      "recompense": 5
+    },
+	{
+      "id": "QE007",
+      "nom": "Artefact des Profondeurs ✨",
+      "resume": "Un érudit recherche des informations sur une baguette magique découverte sur les côtes de Lumharel.",
+      "enonce": "Un érudit de la ville de Giaard t'a approché avec un air grave. « J’ai entendu parler d’une baguette magique trouvée sur les côtes, qui brille d’une lueur mystique. On dit qu’elle est liée à un peuple ancien des océans. Peut-tu en retrouver plus à son sujet ? »",
+      "type": "texte",
+      "details_mp": "Quel est le nom de cet artefact? (https://www.worldanvil.com/w/lumharel-lynabracadabra)",
+      "reponse_attendue": "Loreleil",
+      "recompense": 5
+    },
+	{
+      "id": "QE008",
+      "nom": "La Porte de l'Océan 🌊",
+      "resume": "Un voyageur perdu cherche de l’aide pour identifier une ville.",
+      "enonce": "Un voyageur épuisé, visiblement perdu, t’a montré une carte ancienne marquée d’une ville incomplète, située au sud de l’île d’Ysfern. « J’ai trouvé cette carte dans un vieux coffre, mais elle semble inachevée. Cette ville, elle est censée être un dernier point de repère avant de quitter Ardental, mais je ne sais rien d’autre. Peux-tu m’aider à identifier ce lieu ? »",
+      "type": "texte",
+      "details_mp": "Quel est cette ville? (https://www.worldanvil.com/w/lumharel-lynabracadabra)",
+      "reponse_attendue": "Etheld",
+      "recompense": 6
+    },
+	{
+      "id": "QE009",
+      "nom": "Le Verre de Trop 🍺",
+      "resume": "Après une nuit bien arrosée, tu ne te rappelles plus du nom de ce lieu...",
+      "enonce": "La veille, lors d’une soirée à Garchezdîn, tu avais entendu parler d’une baie au sud des Terres Rouges, entre Khargrun, Garchezdîn et Beld. Un vieux marin t’avait même montré sa position sur une carte, te parlant de son importance pour les voyageurs. Mais avec tout ce que tu as bu, tu ne te rappelles plus du nom de cette baie. Ce matin, alors que tu fouilles ta mémoire, tu demandes à un autre marin : « Tu sais, cette baie… Là, entre Khargrun et Garchezdîn… Son nom m’échappe ! »",
+      "type": "texte",
+      "details_mp": "Quel est cette ville? (https://www.worldanvil.com/w/lumharel-lynabracadabra)",
+      "reponse_attendue": "Baie Crochue",
+      "recompense": 5
+    },
+	{
+      "id": "QE010",
+      "nom": "Les Toits de Garchezdîn 🏠",
+      "resume": "Tu as remarqué les différentes couleurs des toits à Garchezdîn, mais tu ne sais pas ce qu’elles signifient.",
+      "enonce": "En te promenant dans les rues animées de Garchezdîn, tu as remarqué que les toits des bâtiments sont peints de différentes couleurs. Un vieil habitant te lève un sourcil curieux et te dit : « Tu ne connais pas la signification des couleurs des toits ? » Intrigué, tu te rends compte que tu n’en as aucune idée. Il semble que chaque couleur ait une signification, mais laquelle ?",
+      "type": "texte",
+      "details_mp": "Peux-tu en découvrir ce que les couleurs des toîts révèlent sur chaque bâtiment ? (https://www.worldanvil.com/w/lumharel-lynabracadabra)",
+      "reponse_attendue": "Statut",
+      "recompense": 7
     }
   ],
   "Quêtes Énigmes": [
   {
       "id": "QE001",
-      "nom": "Entrevue en forêt 🌲",
-      "resume": "Un ancien texte évoque une race discrète vivant dans les sous-bois...",
-      "enonce": "En forêt, tu as croisé une silhouette à demi dissimulée par la brume et la mousse. Une coiffe rouge, une cape en haillons, un sac à dos bien rempli, un bâton incrusté de spores. Il t’a regardé sans dire un mot… puis disparu.",
+	  "nom": "Lueur dans la nuit 🌒",
+      "resume": "Un vieux poème griffonné sur un mur d’auberge attire ton regard...",
+      "enonce": "« Je veille sans bruit,  
+      Mon visage change chaque nuit.  
+      Parfois ronde, parfois fuyante,  
+      On me cherche, je suis absente. »",
       "type": "texte",
-      "details_mp": "Peux-tu retrouver quel est le nom de cette créature? (https://www.worldanvil.com/w/lumharel-lynabracadabra)",
-      "reponse_attendue": "Dûnpithar",
-      "recompense": 4
+      "details_mp": "Quel est ce mot qui éclaire les ténèbres ?",
+      "reponse_attendue": "lune",
+      "recompense": 3
     },
-    {
+	{
       "id": "QE002",
-      "nom": "Souvenir d’un explorateur 🧭",
-      "resume": "Un ancien texte évoque une race discrète vivant dans les sous-bois...",
-      "enonce": "Au détour d’un campement abandonné, tu trouves un carnet. Les pages racontent des voyages insensés, des créatures bizarres, et toujours la signature au bas des pages : « J. le téméraire ».",
+      "nom": "Sous la dalle poussiéreuse 🗝️",
+      "resume": "Tu explores une crypte oubliée, le silence y est pesant...",
+      "enonce": "« Je suis la fin d’un secret,  
+      Sans moi, nul accès.  
+      Je suis dentée, mais ne mords jamais,  
+      Je tourne, et l’ombre cède. »",
       "type": "texte",
-      "details_mp": "C'est un très bon ami, quel est son nom? (https://www.worldanvil.com/w/lumharel-lynabracadabra)",
-      "reponse_attendue": "Jimbo",
-      "recompense": 4
+      "details_mp": "Quel objet cherche-t-on souvent dans les recoins ?",
+      "reponse_attendue": "clé",
+      "recompense": 3
     },
-    {
+	{
       "id": "QE003",
-      "nom": "Évènement Flamboyant 🔥",
-      "resume": "Un ancien texte évoque une race discrète vivant dans les sous-bois...",
-      "enonce": "Un parchemin roulé glissé dans ton sac sans que tu t’en rendes compte. Il sent la suie et la cendre. « Quand le feu embrasse la saison nouvelle, les lanternes dansent dans la nuit de Vaekirn… »",
+      "nom": "Reflet d’une présence 👤",
+      "resume": "Une silhouette te suit, mais tu ne vois rien derrière toi...",
+      "enonce": "« Je m’étends quand la lumière se pose,  
+      Je m’efface dans la nuit close.  
+      Je n’ai ni souffle, ni voix,  
+      Mais toujours je reste près de toi. »",
       "type": "texte",
-      "details_mp": "De quel évènement s'agit-il?",
-      "reponse_attendue": "Festival des Flammes",
-      "recompense": 4
+      "details_mp": "Qui suis-je ?",
+      "reponse_attendue": "ombre",
+      "recompense": 3
     },
-    {
+	{
       "id": "QE004",
-      "nom": "Puissants Dirigeants ✊",
-      "resume": "Un ancien texte évoque une race discrète vivant dans les sous-bois...",
-      "enonce": "Ils ne portent pas de couronnes, mais leur influence est partout. Un parchemin signé par eux a plus de poids que n’importe quel décret royal. Sept sièges. Sept voix. Chaque guilde, une puissance. Ensemble, ils façonnent les décisions dans l’ombre de la grande salle aux vitraux dorés. (https://www.worldanvil.com/w/lumharel-lynabracadabra)",
+      "nom": "Le Temps fragmenté 🌀",
+      "resume": "Les rouages tournent en silence autour d’un grand disque.",
+      "enonce": "« Chaque jour, je te suis sans jamais te rattraper. 
+	  Les Souffles m’organisent, les lunes me rythment. 
+	  Je suis le fil du temps tissé à la main. »",
       "type": "texte",
-      "details_mp": "Qui sont-ils?",
-      "reponse_attendue": "Conseil des Guildes",
-      "recompense": 4
-    }
+      "details_mp": "De quoi s’agit-il ?",
+      "reponse_attendue": "calendrier",
+      "recompense": 3
+    },
+	{
+      "id": "QE005",
+      "nom": "L'Ombre qui Suivait 👻",
+      "resume": "Des voix résonnent dans ta tête. Elles ne sont pas hostiles.",
+      "enonce": "« On ne me voit pas, mais je veille. 
+	  Je murmure dans les rêves, j’éclaire dans le doute. 
+	  Certains disent que je flotte, d’autres que je hante. »",
+	  "type": "texte",
+	  "details_mp": "Que suis-je?",
+      "reponse_attendue": "esprit",
+      "recompense": 3
+    },
+	{
+      "id": "QE006",
+      "nom": "Frappe braisée 🌋",
+      "resume": "",
+      "enonce": "« On entend son souffle de feu résonner dans les creux de Khargrun. 
+	  Il dompte le métal, façonne l’acier, et grave le destin dans le fer encore chaud. »",
+	  "type": "texte",
+	  "details_mp": "Qui suis-je?",
+      "reponse_attendue": "forgeron",
+      "recompense": 3
+    },
+	{
+      "id": "QE007",
+      "nom": "Le Sourire de l'Automne 🍂",
+      "resume": "Une forme familière t’attend entre les feuilles mortes...",
+      "enonce": "« Ronde, dodue, parfois creusée,
+	  Je veille dans les clairières d’automne. 
+	  Mon sourire peut être chaleureux… ou inquiétant. »",
+	  "type": "texte",
+	  "details_mp": "Que suis-je?",
+      "reponse_attendue": "citrouille",
+      "recompense": 3
+    },
+	{
+      "id": "QE008",
+      "nom": "Les Voix de Garchezdîn 🏙️",
+      "resume": "Dans la ville animée de Garchezdîn, les étals regorgent de mystères et de marchandises rares.",
+      "enonce": "« On me traverse sans jamais m’arrêter,
+	  Les bruits et les cris m’accompagnent sans fin.
+	  Je ne suis qu’un lieu, mais je suis un monde,
+	  Où les trésors se cachent entre les rues et les ponts. »",
+	  "type": "texte",
+	  "details_mp": "Que suis-je?",
+      "reponse_attendue": "marché",
+      "recompense": 3
+    },
+	{
+      "id": "QE009",
+      "nom": "Le Rythme des Saisons 🌦️",
+      "resume": "Parmi les vents anciens qui traversent Lumharel, l’un d’eux ne se voit ni ne s’entend… mais rythme le temps et les saisons.",
+      "enonce": "« Invisible mais vital, je rythme les jours et les saisons. 
+	  Dans le Cycle, je me décline, tantôt doux, tantôt brûlant. 
+	  Je suis la respiration même de Lumharel. »",
+	  "type": "texte",
+	  "details_mp": "Que suis-je?",
+      "reponse_attendue": "souffle",
+      "recompense": 3
+    },
+	{
+      "id": "QE010",
+      "nom": "L’Étincelle du Four ✨",
+      "resume": "Un artefact mystérieux, découvert près des vagues, portant la magie d’un ancien peuple, mais aussi celle d’une recette oubliée.",
+      "enonce": "« Trouvée entre mer et ciel,
+      Je suis la lueur d’un secret bien gardé.
+      Sous la main du boulanger, je prends vie,
+      Et aux âmes perdues, je dévoile mon sort.
+      Les vagues m’ont portée, mais mes origines sont d’un autre temps,
+      Un ancien peuple m’a léguée à celui qui sait. »",
+	  "type": "texte",
+	  "details_mp": "Que suis-je?",
+      "reponse_attendue": "baguette",
+      "recompense": 3
+    },
   ]
 }
