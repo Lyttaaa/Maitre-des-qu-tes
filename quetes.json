@@ -49,7 +49,7 @@
       "details_mp": "Va dans **💨rumeurs-du-monde** et réagis avec l’émoji 🔮 à l’un des murmures récents.",
       "action": "reaction",
       "emoji": "🔮",
-	  "channel": "rumeurs-du-monde",
+      "channel": "rumeurs-du-monde",
       "reponse_attendue": null,
       "recompense": 3
     },
@@ -95,7 +95,7 @@
       "reponse_attendue": null,
       "recompense": 20
     },
-	{
+    {
       "id": "QI006",
       "nom": "Les Vins Interdits 🍷",
       "resume": "Un contrebandier de vin cherche à passer discrètement une cargaison d'alcool hors-la-loi.",
@@ -177,7 +177,7 @@
       "recompense": 4
     }
   ],
-  "Quêtes de Recherche": [
+  "Quêtes Recherches": [
     {
       "id": "QR001",
       "nom": "Savoir Oublié 📜",
