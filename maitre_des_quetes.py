@@ -209,7 +209,7 @@ async def poster_quetes(ctx):
     # 🕹️ Quête interaction avec rotation
     interactions = quetes_par_type.get("Quêtes Interactions", [])
     if interactions:
-        quete_interactions = get_quete_non_postee("Quêtes Interactions", interactions)
+        quete_interaction = get_quete_non_postee("Quêtes Interactions", interactions)
         await envoyer_quete(channel, quete_interaction, "Quêtes Interactions")
 
     # 🔍 Quête de recherches avec rotation
