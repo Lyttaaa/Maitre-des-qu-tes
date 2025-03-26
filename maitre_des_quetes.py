@@ -362,7 +362,7 @@ async def mes_quetes(ctx):
 
     # Convertir en sets d'IDs pour comparaison rapide
     ids_accept = set(q["id"] if isinstance(q, dict) else q for q in quetes_accept)
-    ids_done = set(q["id"] if isinstance(q, dict) else q for q in quetes_done)
+    ids_done = set(q.get("id") if isinstance(q, dict) else q for q in quetes_done)
 
     # Tri par catégorie
     categories = {
