@@ -141,9 +141,10 @@
       "resume": "Un musicien de rue joue pour ceux qui n’ont plus rien…",
       "description": "Au détour de la grand-place, un musicien à la barbe grise joue un air doux, les yeux fermés. Son chapeau renversé devant lui n’a que quelques pièces. À ton passage, il rouvre un œil fatigué. « Quelques Lumes, juste assez pour manger ce soir… »",
       "type": "reaction",
-      "details_mp": "Le musicien te demande des Lumes pour manger ce soir. Vos regards se sont croisés, tu ne peux pas fuir, tu reste un peu l'écouter, finalement c'est joli comme mélodie.\n\n❗ Instructions :\nRends toi sur la grand place, dit lui que ce qu'il joue est agréable. Puis réagis son message avec 👛 pour lui donner 5 Lumes et valider la quête.",
+      "details_mp": "Le musicien te demande des Lumes pour manger ce soir. Vos regards se sont croisés, tu ne peux pas fuir, tu reste un peu l'écouter, finalement c'est joli comme mélodie.\n\n❗ Instructions :\nRends toi sur la grand place, dit lui que ce qu'il joue est agréable. Puis réagis son message avec 👛 pour lui donner 5 Lumes et valider la quête.\n\nTon message doit contenir: @Musicien, bravo, magnifique, mélodie",
       "action": "reaction",
       "emoji": "👛",
+      "pnj": "Musicien",
       "channel": "grand-place",
       "reponse_attendue": null,
       "recompense": -5
