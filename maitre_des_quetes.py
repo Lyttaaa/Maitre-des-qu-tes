@@ -215,7 +215,7 @@ async def poster_quetes(ctx):
     # 🔍 Quête de recherches avec rotation
     recherches = quetes_par_type.get("Quêtes Recherches", [])
     if recherches:
-        quete_recherches = get_quete_non_postee("Quêtes de Recherches", recherches)
+        quete_recherches = get_quete_non_postee("Quêtes Recherches", recherches)
         await envoyer_quete(channel, quete_recherches, "Quêtes Recherches")
 
     # 🧩 Quête énigme avec rotation
