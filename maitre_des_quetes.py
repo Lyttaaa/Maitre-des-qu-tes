@@ -29,16 +29,16 @@ def normaliser(texte):
 # Emojis par catégorie
 EMOJI_PAR_CATEGORIE = {
     "Quêtes Journalières": "🕘",
-    "Quêtes Simples": "📦",
-    "Quêtes de Recherche": "🔍",
+    "Quêtes Interactions": "🕹️",
+    "Quêtes de Recherches": "🔍",
     "Quêtes Énigmes": "🧩"
 }
 
 # Couleurs par catégorie
 COULEURS_PAR_CATEGORIE = {
     "Quêtes Journalières": 0x4CAF50,
-    "Quêtes Simples": 0x2196F3,
-    "Quêtes de Recherche": 0x9C27B0,
+    "Quêtes Interactions": 0x2196F3,
+    "Quêtes de Recherches": 0x9C27B0,
     "Quêtes Énigmes": 0xFFC107
 }
 
@@ -206,17 +206,17 @@ async def poster_quetes(ctx):
     for quete in quetes_par_type.get("Quêtes Journalières", [])[:2]:
         await envoyer_quete(channel, quete, "Quêtes Journalières")
 
-    # 📦 Quête simple avec rotation
-    simples = quetes_par_type.get("Quêtes Simples", [])
-    if simples:
-        quete_simple = get_quete_non_postee("Quêtes Simples", simples)
-        await envoyer_quete(channel, quete_simple, "Quêtes Simples")
+    # 🕹️ Quête interaction avec rotation
+    interactions = quetes_par_type.get("Quêtes Interactions", [])
+    if interactions:
+        quete_simple = get_quete_non_postee("Quêtes Interactions", interactions)
+        await envoyer_quete(channel, quete_interaction, "Quêtes Interactions")
 
-    # 🔍 Quête de recherche avec rotation
-    recherches = quetes_par_type.get("Quêtes de Recherche", [])
+    # 🔍 Quête de recherches avec rotation
+    recherches = quetes_par_type.get("Quêtes de Recherches", [])
     if recherches:
-        quete_recherche = get_quete_non_postee("Quêtes de Recherche", recherches)
-        await envoyer_quete(channel, quete_recherche, "Quêtes de Recherche")
+        quete_recherches = get_quete_non_postee("Quêtes de Recherches", recherches)
+        await envoyer_quete(channel, quete_recherches, "Quêtes de Recherches")
 
     # 🧩 Quête énigme avec rotation
     enigmes = quetes_par_type.get("Quêtes Énigmes", [])
@@ -367,8 +367,8 @@ async def mes_quetes(ctx):
     # Tri par catégorie
     categories = {
         "Quêtes Journalières": {"emoji": "🕘", "encours": [], "terminees": []},
-        "Quêtes Simples": {"emoji": "📦", "encours": [], "terminees": []},
-        "Quêtes de Recherche": {"emoji": "🔍", "encours": [], "terminees": []},
+        "Quêtes Interactions": {"emoji": "🕹️", "encours": [], "terminees": []},
+        "Quêtes de Recherches": {"emoji": "🔍", "encours": [], "terminees": []},
         "Quêtes Énigmes": {"emoji": "🧩", "encours": [], "terminees": []}
     }
 
