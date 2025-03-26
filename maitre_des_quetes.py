@@ -432,6 +432,17 @@ async def mes_quetes(ctx):
     embed.description = description
     await ctx.send(embed=embed)
 
+# Commande !bourse
+@bot.command()
+async def bourse(ctx):
+    user_id = str(ctx.author.id)
+    user_data = database.find_one({"_id": user_id})
+    if not user_data:
+        database.insert_one({"_id": user_id, "pseudo": ctx.author.name, "lumes": 0, "derniere_offrande": {}, "roles_temporaires": {}})
+        user_data = database.find_one({"_id": user_id})
+
+    await ctx.send(f"💰 {ctx.author.mention}, tu possèdes actuellement **{user_data['lumes']} Lumes**.")
+    
 @bot.event
 async def on_ready():
     print(f"✅ Le bot est prêt : {bot.user}")
