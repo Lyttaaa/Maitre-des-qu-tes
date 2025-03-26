@@ -197,32 +197,45 @@ async def poster_quetes(ctx):
     quetes_par_type = charger_quetes()
     channel = bot.get_channel(CHANNEL_ID)
 
+    print("📦 Début de la commande !poster_quetes")
+    print(f"🔎 Clés trouvées dans le JSON : {list(quetes_par_type.keys())}")
+
     # 🔄 Supprimer les anciens messages du channel
     async for message in channel.history(limit=100):
         if message.author == bot.user:
             await message.delete()
 
     # 🕘 Poster les 2 quêtes journalières (pas de rotation pour celles-ci)
+    print("📌 Poste les quêtes journalières")
     for quete in quetes_par_type.get("Quêtes Journalières", [])[:2]:
+        print(f"🕘 Quête journalière : {quete['nom']}")
         await envoyer_quete(channel, quete, "Quêtes Journalières")
 
     # 🕹️ Quête interaction avec rotation
     interactions = quetes_par_type.get("Quêtes Interactions", [])
+    print(f"🕹️ Quêtes Interactions trouvées : {len(interactions)}")
     if interactions:
         quete_interaction = get_quete_non_postee("Quêtes Interactions", interactions)
+        print(f"🎯 Interaction choisie : {quete_interaction['nom']}")
         await envoyer_quete(channel, quete_interaction, "Quêtes Interactions")
 
     # 🔍 Quête de recherches avec rotation
     recherches = quetes_par_type.get("Quêtes Recherches", [])
+    print(f"🔍 Quêtes Recherches trouvées : {len(recherches)}")
     if recherches:
         quete_recherches = get_quete_non_postee("Quêtes Recherches", recherches)
+        print(f"📖 Recherche choisie : {quete_recherches['nom']}")
         await envoyer_quete(channel, quete_recherches, "Quêtes Recherches")
 
     # 🧩 Quête énigme avec rotation
     enigmes = quetes_par_type.get("Quêtes Énigmes", [])
+    print(f"🧩 Quêtes Énigmes trouvées : {len(enigmes)}")
     if enigmes:
         quete_enigme = get_quete_non_postee("Quêtes Énigmes", enigmes)
+        print(f"🧠 Énigme choisie : {quete_enigme['nom']}")
         await envoyer_quete(channel, quete_enigme, "Quêtes Énigmes")
+
+    print("✅ Fin de la commande !poster_quetes")
 
 @bot.event
 async def on_raw_reaction_add(payload):
