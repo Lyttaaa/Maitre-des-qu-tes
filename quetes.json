@@ -61,7 +61,7 @@
       "type": "reaction",
       "details_mp": "L’Aubergiste a besoin d’ingrédients pour sa fameuse omelette champêtre.\n\n❗ Instructions :\nSalue l’aubergiste au canal **💬comptoir** et indique-lui que tu as une livraison de champignons pour lui. Puis réais à son message avec 🍄 pour valider la livraison.\n\nTon message doit contenir : `Bonjour, @Aubergiste, livraison, champignon",
       "action": "reaction",
-      "emoji": "🍄"
+      "emoji": "🍄",
       "pnj": "Aubergiste",
       "channel": "comptoir",
       "reponse_attendue": null,
