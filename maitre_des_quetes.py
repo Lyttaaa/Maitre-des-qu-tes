@@ -38,7 +38,7 @@ EMOJI_PAR_CATEGORIE = {
 COULEURS_PAR_CATEGORIE = {
     "Quêtes Journalières": 0x4CAF50,
     "Quêtes Interactions": 0x2196F3,
-    "Quêtes de Recherches": 0x9C27B0,
+    "Quêtes Recherches": 0x9C27B0,
     "Quêtes Énigmes": 0xFFC107
 }
 
