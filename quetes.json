@@ -73,7 +73,7 @@
       "resume": "Un Saltimbanque cherche un acolyte pour sa prochaine représentation.",
       "description": "Un Saltimbanque de rue te repère et te propose un rôle. « Tu veux bien jouer pour moi ? J’ai une idée en tête, mais il me manque le.a comédien.e parfait.e. Quoi? Tu acceptes? Super!! Voici le script et retrouve moi sur la **⛲grand-place** pour le spectacle !!»",
       "type": "reaction",
-      "details_mp": "Le Saltimbanque à besoin de toi pour jouer un rôle.\n\n❗ Instructions :\nApprends le script, va sur la **⛲grand-place** et récite ta tirade. Puis réais à son message avec 🎭 pour valider la quêtes.\n\nScript: `O noble âme, prête à être figée dans le marbre du temps, viens et fais de toi la muse de mon regard, car dans ton ombre se cache l’inspiration qui m’échappe !",
+      "details_mp": "Le Saltimbanque à besoin de toi pour jouer un rôle.\n\n❗ Instructions :\nApprends le script, va sur la **⛲grand-place** et récite ta tirade. Puis réais à son message avec 🎭 pour valider la quêtes.\n\nScript: `Ouvre grand les yeux, voyageur du monde, car ce soir, le destin t’accorde une faveur rare : la présence de @Saltimbanque, poète des âmes, prodige des planches, flamme du verbe et du geste… Hélas, trop humble pour te l’avouer lui-même. ",
       "action": "reaction",
       "emoji": "🎭",
       "pnj": "Saltimbanque",
