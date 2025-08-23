@@ -379,3 +379,51 @@ async def mes_quetes(ctx):
         desc += "\n".join(data["terminees"]) + "\n" if data["terminees"] else "*Aucune*\n"
 
     embed
+
+# --- DIAG COMMANDES ---
+
+@bot.event
+async def on_command_error(ctx, error):
+    # Permissions manquantes
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.reply("❌ Il faut être **administrateur** pour cette commande.", mention_author=False)
+    # Mauvais nom de commande
+    elif isinstance(error, commands.CommandNotFound):
+        return  # on ignore
+    # Erreur dans la commande
+    else:
+        # log dans la console + message lisible
+        print("⚠️ Command error:", repr(error))
+        await ctx.reply("⚠️ Une erreur est survenue pendant l’exécution de la commande. Regarde les logs.", mention_author=False)
+
+@bot.command()
+async def ping(ctx):
+    await ctx.reply("Pong 🏓", mention_author=False)
+
+@bot.command()
+async def poster_preview(ctx):
+    """Vérifie que les IDs et l’accès sont corrects (ne poste rien)."""
+    ok = True
+    msgs = []
+    if not QUESTS_CHANNEL_ID:
+        ok = False
+        msgs.append("❌ `QUESTS_CHANNEL_ID` est vide ou 0.")
+    else:
+        ch = bot.get_channel(QUESTS_CHANNEL_ID)
+        if not ch:
+            ok = False
+            msgs.append(f"❌ Salon quêtes introuvable pour ID={QUESTS_CHANNEL_ID}.")
+        else:
+            # vérifie permissions basiques
+            perms = ch.permissions_for(ch.guild.me)
+            if not perms.view_channel or not perms.send_messages:
+                ok = False
+                msgs.append("❌ Je n’ai pas les permissions **voir**/**écrire** dans le salon quêtes.")
+            else:
+                msgs.append("✅ Accès au salon quêtes OK.")
+
+    if ok:
+        await ctx.reply("✅ Pré-check OK. Tu peux lancer `!poster_quetes` (admin).", mention_author=False)
+    else:
+        await ctx.reply("\n".join(msgs), mention_author=False)
+
