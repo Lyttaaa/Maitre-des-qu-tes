@@ -95,6 +95,135 @@ async def purger_messages_categorie(channel: discord.TextChannel, categorie: str
                 except:
                     pass
 
+# ======================
+#  BOUTONS PERSISTANTS
+# ======================
+# index (catégorie, id) -> quete
+_QUEST_INDEX: dict[tuple[str, str], dict] = {}
+
+def make_accept_view(quete_id: str, categorie: str) -> discord.ui.View:
+    """
+    Crée une View persistante avec un custom_id stable.
+    """
+    v = discord.ui.View(timeout=None)
+    btn = discord.ui.Button(
+        label="Accepter 📥",
+        style=discord.ButtonStyle.green,
+        custom_id=f"acc::{categorie}::{quete_id}",  # ID stable pour persistance
+    )
+
+    async def _callback(interaction: discord.Interaction):
+        await handle_accept_interaction(interaction, quete_id, categorie)
+
+    btn.callback = _callback
+    v.add_item(btn)
+    return v
+
+async def handle_accept_interaction(interaction: discord.Interaction, quete_id: str, categorie: str):
+    """
+    Logique d'acceptation d'une quête (remplace l'ancienne VueAcceptation.accepter)
+    """
+    user_id = str(interaction.user.id)
+
+    # Récupère la quête depuis l'index ; fallback: recharge quetes.json
+    quete = _QUEST_INDEX.get((categorie, quete_id))
+    if not quete:
+        for cat, lst in charger_quetes().items():
+            for q in lst:
+                if q["id"] == quete_id and cat == categorie:
+                    quete = q
+                    _QUEST_INDEX[(cat, quete_id)] = q
+                    break
+            if quete:
+                break
+    if not quete:
+        await interaction.response.send_message("⚠️ Quête introuvable.", ephemeral=True)
+        return
+
+    # déjà acceptée ?
+    quete_data = accepted_collection.find_one({"_id": user_id})
+    if quete_data and any(q.get("id") == quete_id for q in quete_data.get("quetes", [])):
+        await interaction.response.send_message(
+            "Tu as déjà accepté cette quête ! Consulte `!mes_quetes`.",
+            ephemeral=True
+        )
+        return
+
+    # déjà terminée ? (sauf journalières)
+    deja_faite = completed_collection.find_one(
+        {"_id": user_id, "quetes": {"$elemMatch": {"id": quete_id}}}
+    )
+    if deja_faite and categorie != "Quêtes Journalières":
+        try:
+            await interaction.user.send(
+                f"📪 Tu as déjà terminé **{quete['nom']}** (non rejouable). Consulte `!mes_quetes`."
+            )
+        except discord.Forbidden:
+            await interaction.response.send_message(
+                "Tu as déjà terminé cette quête (non rejouable), et je ne peux pas t’envoyer de MP.",
+                ephemeral=True
+            )
+        return
+
+    # Enregistre l'acceptation
+    accepted_collection.update_one(
+        {"_id": user_id},
+        {"$addToSet": {
+            "quetes": {
+                "categorie": categorie,
+                "id": quete_id,
+                "nom": quete["nom"]
+            }
+        }, "$set": {"pseudo": interaction.user.name}},
+        upsert=True
+    )
+
+    # Prépare le MP d’instructions
+    if categorie == "Quêtes Énigmes":
+        embed = discord.Embed(
+            title="🧩 Quête Énigmes",
+            description=f"**{quete['id']} – {quete['nom']}**",
+            color=COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
+        )
+        embed.add_field(name="💬 Énoncé", value=quete["enonce"], inline=False)
+        embed.add_field(name="👉 Objectif", value="Trouve la réponse et réponds-moi ici.", inline=False)
+        embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
+    else:
+        titre_embed = f"{EMOJI_PAR_CATEGORIE.get(categorie, '📜')} {categorie}"
+        embed = discord.Embed(
+            title=titre_embed,
+            description=f"**{quete['id']} – {quete['nom']}**",
+            color=COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
+        )
+        embed.add_field(name="💬 Description", value=quete["description"], inline=False)
+        embed.add_field(name="👉 Objectif", value=quete["details_mp"], inline=False)
+        embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
+
+    # Réponse à l’interaction (toujours répondre)
+    try:
+        await interaction.user.send(embed=embed)
+        await interaction.response.send_message(
+            "Quête acceptée ✅ Regarde tes MP ! (`!mes_quetes` pour le suivi)",
+            ephemeral=True
+        )
+    except discord.Forbidden:
+        await interaction.response.send_message("Je n'arrive pas à t'envoyer de MP 😅", ephemeral=True)
+
+async def register_persistent_views():
+    """
+    Enregistre TOUTES les views persistantes des quêtes existantes.
+    Ainsi, les anciens boutons continuent de marcher après redémarrage.
+    """
+    quetes_par_type = charger_quetes()
+    _QUEST_INDEX.clear()
+    for categorie, lst in quetes_par_type.items():
+        for q in lst:
+            _QUEST_INDEX[(categorie, q["id"])] = q
+            bot.add_view(make_accept_view(q["id"], categorie))
+
+# ======================
+#  ENVOI DES QUÊTES
+# ======================
 async def envoyer_quete(channel, quete, categorie):
     emoji = EMOJI_PAR_CATEGORIE.get(categorie, "❓")
     couleur = COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
@@ -104,7 +233,9 @@ async def envoyer_quete(channel, quete, categorie):
     type_texte = f"{categorie} – {quete['recompense']} Lumes"
     embed.add_field(name="📌 Type & Récompense", value=type_texte, inline=False)
     embed.set_footer(text="Clique sur le bouton ci-dessous pour accepter la quête.")
-    await channel.send(embed=embed, view=VueAcceptation(quete, categorie))
+
+    # View persistante
+    await channel.send(embed=embed, view=make_accept_view(quete["id"], categorie))
 
 def get_quete_non_postee(categorie, quetes_possibles):
     doc = rotation_collection.find_one({"_id": categorie})
@@ -120,88 +251,6 @@ def get_quete_non_postee(categorie, quetes_possibles):
         upsert=True
     )
     return quete
-
-# ======================
-#  VUE BOUTON "ACCEPTER"
-# ======================
-class VueAcceptation(View):
-    def __init__(self, quete, categorie):
-        super().__init__(timeout=None)
-        self.quete = quete
-        self.categorie = categorie
-
-    @discord.ui.button(label="Accepter 📥", style=discord.ButtonStyle.green)
-    async def accepter(self, interaction: discord.Interaction, button: discord.ui.Button):
-        user_id = str(interaction.user.id)
-        quete_id = self.quete["id"]
-
-        # déjà acceptée ?
-        quete_data = accepted_collection.find_one({"_id": user_id})
-        if quete_data and any(q.get("id") == quete_id for q in quete_data.get("quetes", [])):
-            await interaction.response.send_message(
-                "Tu as déjà accepté cette quête ! Consulte `!mes_quetes`.",
-                ephemeral=True
-            )
-            return
-
-        # déjà terminée ? (sauf journalières)
-        deja_faite = completed_collection.find_one(
-            {"_id": user_id, "quetes": {"$elemMatch": {"id": quete_id}}}
-        )
-        if deja_faite and self.categorie != "Quêtes Journalières":
-            try:
-                await interaction.user.send(
-                    f"📪 Tu as déjà terminé **{self.quete['nom']}** (non rejouable). "
-                    "Consulte `!mes_quetes`."
-                )
-            except discord.Forbidden:
-                await interaction.response.send_message(
-                    "Tu as déjà terminé cette quête (non rejouable), et je ne peux pas t’envoyer de MP.",
-                    ephemeral=True
-                )
-            return
-
-        accepted_collection.update_one(
-            {"_id": user_id},
-            {"$addToSet": {
-                "quetes": {
-                    "categorie": self.categorie,
-                    "id": quete_id,
-                    "nom": self.quete["nom"]
-                }
-            }, "$set": {"pseudo": interaction.user.name}},
-            upsert=True
-        )
-
-        # MP d’instructions
-        if self.categorie == "Quêtes Énigmes":
-            embed = discord.Embed(
-                title="🧩 Quête Énigmes",
-                description=f"**{self.quete['id']} – {self.quete['nom']}**",
-                color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
-            )
-            embed.add_field(name="💬 Énoncé", value=self.quete["enonce"], inline=False)
-            embed.add_field(name="👉 Objectif", value="Trouve la réponse et réponds-moi ici.", inline=False)
-            embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
-        else:
-            titre_embed = f"{EMOJI_PAR_CATEGORIE.get(self.categorie, '📜')} {self.categorie}"
-            embed = discord.Embed(
-                title=titre_embed,
-                description=f"**{self.quete['id']} – {self.quete['nom']}**",
-                color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
-            )
-            embed.add_field(name="💬 Description", value=self.quete["description"], inline=False)
-            embed.add_field(name="👉 Objectif", value=self.quete["details_mp"], inline=False)
-            embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
-
-        try:
-            await interaction.user.send(embed=embed)
-            await interaction.response.send_message(
-                "Quête acceptée ✅ Regarde tes MP ! (`!mes_quetes` pour le suivi)",
-                ephemeral=True
-            )
-        except discord.Forbidden:
-            await interaction.response.send_message("Je n'arrive pas à t'envoyer de MP 😅", ephemeral=True)
 
 # ======================
 #  POSTERS
@@ -329,151 +378,4 @@ async def mes_quetes(ctx):
         desc += f"{data['emoji']} __{cat.replace('Quêtes ', '')} :__\n"
         desc += "\n".join(data["terminees"]) + "\n" if data["terminees"] else "*Aucune*\n"
 
-    embed.description = desc
-    await ctx.send(embed=embed)
-
-@bot.command()
-async def bourse(ctx):
-    user_id = str(ctx.author.id)
-    user = utilisateurs.find_one({"_id": user_id})
-    if not user:
-        utilisateurs.insert_one({
-            "_id": user_id,
-            "pseudo": ctx.author.name,
-            "lumes": 0,
-            "derniere_offrande": {},
-            "roles_temporaires": {},
-        })
-        user = utilisateurs.find_one({"_id": user_id}) or {}
-    await ctx.send(f"💰 {ctx.author.mention}, tu possèdes **{user.get('lumes', 0)} Lumes**.")
-
-# ======================
-#  EVENTS: COMPLETION
-# ======================
-@bot.event
-async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
-    if payload.member is None or payload.member.bot:
-        return
-
-    user = payload.member
-    user_id = str(payload.user_id)
-    emoji = str(payload.emoji)
-
-    quetes = charger_quetes()
-    user_data = accepted_collection.find_one({"_id": user_id})
-    if not user_data:
-        return
-
-    quetes_acceptees = user_data.get("quetes", [])
-    toutes_quetes = [q for lst in quetes.values() for q in lst]
-
-    for quete in toutes_quetes:
-        if quete.get("type") != "reaction":
-            continue
-        if quete["id"] not in [q["id"] if isinstance(q, dict) else q for q in quetes_acceptees]:
-            continue
-
-        liste_emojis = quete.get("emoji", [])
-        if isinstance(liste_emojis, str):
-            liste_emojis = [liste_emojis]
-
-        if emoji in liste_emojis:
-            accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": {"id": quete["id"]}}})
-            completed_collection.update_one(
-                {"_id": user_id},
-                {"$addToSet": {"quetes": {"id": quete["id"], "nom": quete["nom"], "categorie": quete["categorie"]}},
-                 "$set": {"pseudo": user.name}},
-                upsert=True
-            )
-            utilisateurs.update_one(
-                {"_id": user_id},
-                {"$inc": {"lumes": quete["recompense"]},
-                 "$setOnInsert": {"pseudo": user.name, "derniere_offrande": {}, "roles_temporaires": {}}},
-                upsert=True
-            )
-            try:
-                await user.send(f"✨ Tu as terminé **{quete['nom']}** et gagné **{quete['recompense']} Lumes** !")
-            except discord.Forbidden:
-                ch = bot.get_channel(payload.channel_id)
-                if ch:
-                    await ch.send(f"✅ {user.mention} a terminé **{quete['nom']}** ! (MP non reçu)")
-            return
-
-@bot.event
-async def on_message(message: discord.Message):
-    if message.author.bot:
-        return
-
-    # Réponse aux énigmes en MP
-    if isinstance(message.channel, discord.DMChannel):
-        user = message.author
-        user_id = str(user.id)
-        contenu = message.content.strip()
-
-        quetes = charger_quetes()
-        user_data = accepted_collection.find_one({"_id": user_id})
-        if not user_data:
-            return
-
-        quetes_acceptees = user_data.get("quetes", [])
-        toutes_quetes = [q for lst in quetes.values() for q in lst]
-
-        for quete in toutes_quetes:
-            if quete["id"] not in [q["id"] if isinstance(q, dict) else q for q in quetes_acceptees]:
-                continue
-
-            bonne = normaliser(quete.get("reponse_attendue", ""))
-            if normaliser(contenu) == bonne:
-                accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": {"id": quete["id"]}}})
-                completed_collection.update_one(
-                    {"_id": user_id},
-                    {"$addToSet": {"quetes": {"id": quete["id"], "nom": quete["nom"], "categorie": quete["categorie"]}},
-                     "$set": {"pseudo": user.name}},
-                    upsert=True
-                )
-                utilisateurs.update_one(
-                    {"_id": user_id},
-                    {"$inc": {"lumes": quete["recompense"]},
-                     "$setOnInsert": {"pseudo": user.name, "derniere_offrande": {}, "roles_temporaires": {}}},
-                    upsert=True
-                )
-                await message.channel.send(
-                    f"✅ Parfait ! Tu as complété **{quete['nom']}** et gagné **{quete['recompense']} Lumes** !"
-                )
-                return
-
-    await bot.process_commands(message)
-
-# ======================
-#  SCHEDULER
-# ======================
-_scheduler = None
-
-@bot.event
-async def on_ready():
-    global _scheduler
-    print(f"✅ Bot prêt : {bot.user}")
-
-    if _scheduler is None:
-        _scheduler = AsyncIOScheduler(timezone=TZ_PARIS)
-        # Tous les jours 10:30 → journalières
-        _scheduler.add_job(lambda: bot.loop.create_task(poster_journalieres()),
-                           CronTrigger(hour=10, minute=30))
-        # Chaque lundi 10:31 → hebdo (décalé d’1 min pour éviter concurrence)
-        _scheduler.add_job(lambda: bot.loop.create_task(poster_hebdo()),
-                           CronTrigger(day_of_week='mon', hour=10, minute=31))
-        # Annonce après chaque post hebdo
-        if ANNOUNCE_CHANNEL_ID:
-            _scheduler.add_job(lambda: bot.loop.create_task(annoncer_mise_a_jour()),
-                               CronTrigger(day_of_week='mon', hour=10, minute=32))
-
-        _scheduler.start()
-        print("⏰ Scheduler démarré (journalières quotidiennes, hebdo le lundi).")
-
-# ======================
-#  RUN
-# ======================
-if __name__ == "__main__":
-    if not DISCORD_TOKEN or not MONGO_URI or not QUESTS_CHANNEL_ID:
-        print("❌ DISCORD_TOKEN / MONGO_URI / QUESTS_CHANNEL_ID manquant(s).")
-    bot.run(DISCORD_TOKEN)
+    embed
