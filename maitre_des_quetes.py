@@ -2,6 +2,7 @@ import os
 import re
 import json
 import unicodedata
+import logging
 from random import choice
 
 import discord
@@ -12,6 +13,11 @@ from pymongo import MongoClient
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 import pytz
+
+# Log verbeux pour diagnostiquer la connexion
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("discord")
+logger.setLevel(logging.INFO)
 
 # ======================
 #  CONFIG DISCORD & DB
@@ -426,4 +432,16 @@ async def poster_preview(ctx):
         await ctx.reply("✅ Pré-check OK. Tu peux lancer `!poster_quetes` (admin).", mention_author=False)
     else:
         await ctx.reply("\n".join(msgs), mention_author=False)
+
+@bot.event
+async def on_connect():
+    print("🔌 on_connect() — passerelle Discord OK")
+
+@bot.event
+async def on_resumed():
+    print("🔄 on_resumed() — session reprise")
+
+@bot.event
+async def on_ready():
+    print(f"✅ on_ready() — connecté en tant que {bot.user} (latence {bot.latency*1000:.0f} ms)")
 
