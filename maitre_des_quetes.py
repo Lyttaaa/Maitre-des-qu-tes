@@ -256,7 +256,7 @@ async def annoncer_mise_a_jour():
     ch = bot.get_channel(ANNOUNCE_CHANNEL_ID)
     if ch:
         await ch.send(
-            "👋 Oyez oyez, @everyone ! Les quêtes **journalières** et/ou **hebdomadaires** ont été mises à jour "
+            "👋 Oyez oyez, @Aventuriers.ères 🥾 ! Les quêtes **journalières** et/ou **hebdomadaires** ont été mises à jour "
             f"dans <#{QUESTS_CHANNEL_ID}>. Puissent les Souffles vous être favorables 🌬️ !"
         )
 
