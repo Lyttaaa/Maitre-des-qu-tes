@@ -589,6 +589,55 @@ async def on_ready():
         _scheduler.start()
         print("⏰ Scheduler démarré (journalières quotidiennes, hebdo le lundi).")
 
+# --- AJOUTS / REMPLACES ICI ---
+
+# 1) ajoute cette commande admin pour forcer la sync des slash
+@bot.tree.command(name="sync", description="Force la synchronisation des commandes slash (admin)")
+@commands.has_permissions(administrator=True)
+async def sync_slash(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
+    try:
+        # sync uniquement sur cette guilde pour que ça apparaisse instantanément
+        if interaction.guild:
+            synced = await bot.tree.sync(guild=interaction.guild)
+            await interaction.followup.send(f"✅ Slash sync (guilde) : {len(synced)} commandes.", ephemeral=True)
+        else:
+            synced = await bot.tree.sync()
+            await interaction.followup.send(f"✅ Slash sync (global) : {len(synced)} commandes.", ephemeral=True)
+    except Exception as e:
+        await interaction.followup.send(f"⚠️ Erreur sync : {e}", ephemeral=True)
+
+# 2) utilise setup_hook pour enregistrer les vues persistantes et sync les slash
+@bot.event
+async def setup_hook():
+    # Views persistantes (pour que les anciens boutons continuent après redémarrage)
+    try:
+        await register_persistent_views()
+        print("🧷 Views persistantes enregistrées (setup_hook).")
+    except Exception as e:
+        print("⚠️ register_persistent_views error (setup_hook):", e)
+
+    # Sync slash au démarrage (guild si dispo, sinon global)
+    try:
+        # si tu veux une propagation instantanée sur TA guilde, mets l’ID ici:
+        GUILD_ID = os.getenv("GUILD_ID")
+        if GUILD_ID and GUILD_ID.isdigit():
+            guild = discord.Object(id=int(GUILD_ID))
+            bot.tree.copy_global_to(guild=guild)
+            await bot.tree.sync(guild=guild)
+            print("🌿 Slash commands synchronisées (guild).")
+        else:
+            await bot.tree.sync()
+            print("🌿 Slash commands synchronisées (global).")
+    except Exception as e:
+        print("⚠️ Slash sync error (setup_hook):", e)
+
+# 3) simplifie on_ready (juste log)
+@bot.event
+async def on_ready():
+    print(f"✅ SMOKE: connecté en tant que {bot.user} (latence {round(bot.latency*1000)} ms)")
+
+
 # ======================
 #  RUN
 # ======================
