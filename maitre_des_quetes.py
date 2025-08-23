@@ -74,12 +74,17 @@ def normaliser(texte):
 def charger_quetes():
     with open("quetes.json", "r", encoding="utf-8") as f:
         data = json.load(f)
+    # Injecter la catégorie dans chaque quête
     for categorie, quetes in data.items():
         for quete in quetes:
             quete["categorie"] = categorie
     return data
 
 async def purger_messages_categorie(channel: discord.TextChannel, categorie: str, limit=100):
+    """
+    Supprime uniquement les anciens messages du bot qui contiennent un embed
+    dont le titre commence par l’emoji de la catégorie.
+    """
     prefix = EMOJI_PAR_CATEGORIE.get(categorie, "")
     async for message in channel.history(limit=limit):
         if message.author == bot.user and message.embeds:
@@ -146,7 +151,8 @@ class VueAcceptation(View):
         if deja_faite and self.categorie != "Quêtes Journalières":
             try:
                 await interaction.user.send(
-                    f"📪 Tu as déjà terminé **{self.quete['nom']}** (non rejouable). Consulte `!mes_quetes`."
+                    f"📪 Tu as déjà terminé **{self.quete['nom']}** (non rejouable). "
+                    "Consulte `!mes_quetes`."
                 )
             except discord.Forbidden:
                 await interaction.response.send_message(
@@ -201,6 +207,7 @@ class VueAcceptation(View):
 #  POSTERS
 # ======================
 async def poster_journalieres():
+    """Poste seulement les 2 quêtes journalières (tous les jours)."""
     quetes_par_type = charger_quetes()
     channel = bot.get_channel(QUESTS_CHANNEL_ID)
     if not channel:
@@ -213,6 +220,7 @@ async def poster_journalieres():
     print("✅ Journalières postées.")
 
 async def poster_hebdo():
+    """Poste 1 interaction + 1 recherche + 1 énigme avec rotation (chaque semaine)."""
     quetes_par_type = charger_quetes()
     channel = bot.get_channel(QUESTS_CHANNEL_ID)
     if not channel:
@@ -248,7 +256,7 @@ async def annoncer_mise_a_jour():
     ch = bot.get_channel(ANNOUNCE_CHANNEL_ID)
     if ch:
         await ch.send(
-            "👋 Oyez oyez, @Aventuriers.ères 🥾 ! Les quêtes **journalières** et/ou **hebdomadaires** ont été mises à jour "
+            "👋 Oyez oyez, @everyone ! Les quêtes **journalières** et/ou **hebdomadaires** ont été mises à jour "
             f"dans <#{QUESTS_CHANNEL_ID}>. Puissent les Souffles vous être favorables 🌬️ !"
         )
 
@@ -258,6 +266,7 @@ async def annoncer_mise_a_jour():
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def poster_quetes(ctx):
+    """Poste tout d’un coup (journalières + hebdo) — commande admin."""
     await poster_journalieres()
     await poster_hebdo()
     await annoncer_mise_a_jour()
@@ -395,6 +404,7 @@ async def on_message(message: discord.Message):
     if message.author.bot:
         return
 
+    # Réponse aux énigmes en MP
     if isinstance(message.channel, discord.DMChannel):
         user = message.author
         user_id = str(user.id)
@@ -424,4 +434,46 @@ async def on_message(message: discord.Message):
                 utilisateurs.update_one(
                     {"_id": user_id},
                     {"$inc": {"lumes": quete["recompense"]},
-                     "$setOnInsert": {"pseudo": user.name, "derniere_offrande": {}, "roles
+                     "$setOnInsert": {"pseudo": user.name, "derniere_offrande": {}, "roles_temporaires": {}}},
+                    upsert=True
+                )
+                await message.channel.send(
+                    f"✅ Parfait ! Tu as complété **{quete['nom']}** et gagné **{quete['recompense']} Lumes** !"
+                )
+                return
+
+    await bot.process_commands(message)
+
+# ======================
+#  SCHEDULER
+# ======================
+_scheduler = None
+
+@bot.event
+async def on_ready():
+    global _scheduler
+    print(f"✅ Bot prêt : {bot.user}")
+
+    if _scheduler is None:
+        _scheduler = AsyncIOScheduler(timezone=TZ_PARIS)
+        # Tous les jours 10:30 → journalières
+        _scheduler.add_job(lambda: bot.loop.create_task(poster_journalieres()),
+                           CronTrigger(hour=10, minute=30))
+        # Chaque lundi 10:31 → hebdo (décalé d’1 min pour éviter concurrence)
+        _scheduler.add_job(lambda: bot.loop.create_task(poster_hebdo()),
+                           CronTrigger(day_of_week='mon', hour=10, minute=31))
+        # Annonce après chaque post hebdo
+        if ANNOUNCE_CHANNEL_ID:
+            _scheduler.add_job(lambda: bot.loop.create_task(annoncer_mise_a_jour()),
+                               CronTrigger(day_of_week='mon', hour=10, minute=32))
+
+        _scheduler.start()
+        print("⏰ Scheduler démarré (journalières quotidiennes, hebdo le lundi).")
+
+# ======================
+#  RUN
+# ======================
+if __name__ == "__main__":
+    if not DISCORD_TOKEN or not MONGO_URI or not QUESTS_CHANNEL_ID:
+        print("❌ DISCORD_TOKEN / MONGO_URI / QUESTS_CHANNEL_ID manquant(s).")
+    bot.run(DISCORD_TOKEN)
