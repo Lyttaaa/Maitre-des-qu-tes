@@ -316,31 +316,30 @@ async def annoncer_mise_a_jour():
         )
 
 # ======================
-#  COMMANDES
+#  COMMANDES (hybrides = !cmd et /cmd)
 # ======================
-@bot.command()
+@bot.hybrid_command(name="poster_quetes", description="Poste journalières + hebdo (admin)")
 @commands.has_permissions(administrator=True)
-async def poster_quetes(ctx):
-    """Poste tout d’un coup (journalières + hebdo) — commande admin."""
+async def poster_quetes(ctx: commands.Context):
     await poster_journalieres()
     await poster_hebdo()
     await annoncer_mise_a_jour()
     await ctx.reply("✅ Quêtes postées (journalières + hebdo).")
 
-@bot.command()
+@bot.hybrid_command(name="journaliere", description="Poste les quêtes journalières (admin)")
 @commands.has_permissions(administrator=True)
-async def journaliere(ctx):
+async def journaliere(ctx: commands.Context):
     await poster_journalieres()
     await ctx.reply("✅ Journalières postées.")
 
-@bot.command()
+@bot.hybrid_command(name="hebdo", description="Poste les quêtes hebdomadaires (admin)")
 @commands.has_permissions(administrator=True)
-async def hebdo(ctx):
+async def hebdo(ctx: commands.Context):
     await poster_hebdo()
     await ctx.reply("✅ Hebdomadaires postées.")
 
-@bot.command()
-async def mes_quetes(ctx):
+@bot.hybrid_command(name="mes_quetes", description="Liste tes quêtes en cours et terminées")
+async def mes_quetes(ctx: commands.Context):
     user_id = str(ctx.author.id)
     toutes_quetes = [q for lst in charger_quetes().values() for q in lst]
 
@@ -384,27 +383,41 @@ async def mes_quetes(ctx):
         desc += f"{data['emoji']} __{cat.replace('Quêtes ', '')} :__\n"
         desc += "\n".join(data["terminees"]) + "\n" if data["terminees"] else "*Aucune*\n"
 
-    embed
+    embed.description = desc
+    await ctx.send(embed=embed)
+
+@bot.hybrid_command(name="bourse", description="Affiche tes Lumes")
+async def bourse(ctx: commands.Context):
+    user_id = str(ctx.author.id)
+    user = utilisateurs.find_one({"_id": user_id})
+    if not user:
+        utilisateurs.insert_one({
+            "_id": user_id,
+            "pseudo": ctx.author.name,
+            "lumes": 0,
+            "derniere_offrande": {},
+            "roles_temporaires": {},
+        })
+        user = utilisateurs.find_one({"_id": user_id}) or {}
+    await ctx.send(f"💰 {ctx.author.mention}, tu possèdes **{user.get('lumes', 0)} Lumes**.")
 
 # --- DIAG COMMANDES ---
-
 @bot.event
 async def on_command_error(ctx, error):
-    # Permissions manquantes
     if isinstance(error, commands.MissingPermissions):
         await ctx.reply("❌ Il faut être **administrateur** pour cette commande.", mention_author=False)
-    # Mauvais nom de commande
     elif isinstance(error, commands.CommandNotFound):
-        return  # on ignore
-    # Erreur dans la commande
+        return
     else:
-        # log dans la console + message lisible
         print("⚠️ Command error:", repr(error))
-        await ctx.reply("⚠️ Une erreur est survenue pendant l’exécution de la commande. Regarde les logs.", mention_author=False)
+        try:
+            await ctx.reply("⚠️ Une erreur est survenue pendant l’exécution de la commande.", mention_author=False)
+        except:
+            pass
 
 @bot.command()
 async def ping(ctx):
-    await ctx.reply("Pong 🏓", mention_author=False)
+    await ctx.reply(f"Pong 🏓 {round(bot.latency*1000)} ms", mention_author=False)
 
 @bot.command()
 async def poster_preview(ctx):
@@ -420,18 +433,118 @@ async def poster_preview(ctx):
             ok = False
             msgs.append(f"❌ Salon quêtes introuvable pour ID={QUESTS_CHANNEL_ID}.")
         else:
-            # vérifie permissions basiques
             perms = ch.permissions_for(ch.guild.me)
             if not perms.view_channel or not perms.send_messages:
                 ok = False
                 msgs.append("❌ Je n’ai pas les permissions **voir**/**écrire** dans le salon quêtes.")
             else:
                 msgs.append("✅ Accès au salon quêtes OK.")
-
     if ok:
         await ctx.reply("✅ Pré-check OK. Tu peux lancer `!poster_quetes` (admin).", mention_author=False)
     else:
         await ctx.reply("\n".join(msgs), mention_author=False)
+
+# ======================
+#  EVENTS (complétion)
+# ======================
+@bot.event
+async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
+    if payload.member is None or payload.member.bot:
+        return
+
+    user = payload.member
+    user_id = str(payload.user_id)
+    emoji = str(payload.emoji)
+
+    quetes = charger_quetes()
+    user_data = accepted_collection.find_one({"_id": user_id})
+    if not user_data:
+        return
+
+    quetes_acceptees = user_data.get("quetes", [])
+    toutes_quetes = [q for lst in quetes.values() for q in lst]
+
+    for quete in toutes_quetes:
+        if quete.get("type") != "reaction":
+            continue
+        if quete["id"] not in [q["id"] if isinstance(q, dict) else q for q in quetes_acceptees]:
+            continue
+
+        liste_emojis = quete.get("emoji", [])
+        if isinstance(liste_emojis, str):
+            liste_emojis = [liste_emojis]
+
+        if emoji in liste_emojis:
+            accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": {"id": quete["id"]}}})
+            completed_collection.update_one(
+                {"_id": user_id},
+                {"$addToSet": {"quetes": {"id": quete["id"], "nom": quete["nom"], "categorie": quete["categorie"]}},
+                 "$set": {"pseudo": user.name}},
+                upsert=True
+            )
+            utilisateurs.update_one(
+                {"_id": user_id},
+                {"$inc": {"lumes": quete["recompense"]},
+                 "$setOnInsert": {"pseudo": user.name, "derniere_offrande": {}, "roles_temporaires": {}}},
+                upsert=True
+            )
+            try:
+                await user.send(f"✨ Tu as terminé **{quete['nom']}** et gagné **{quete['recompense']} Lumes** !")
+            except discord.Forbidden:
+                ch = bot.get_channel(payload.channel_id)
+                if ch:
+                    await ch.send(f"✅ {user.mention} a terminé **{quete['nom']}** ! (MP non reçu)")
+            return
+
+@bot.event
+async def on_message(message: discord.Message):
+    if message.author.bot:
+        return
+
+    # Réponse aux énigmes en MP
+    if isinstance(message.channel, discord.DMChannel):
+        user = message.author
+        user_id = str(user.id)
+        contenu = message.content.strip()
+
+        quetes = charger_quetes()
+        user_data = accepted_collection.find_one({"_id": user_id})
+        if not user_data:
+            return
+
+        quetes_acceptees = user_data.get("quetes", [])
+        toutes_quetes = [q for lst in quetes.values() for q in lst]
+
+        for quete in toutes_quetes:
+            if quete["id"] not in [q["id"] if isinstance(q, dict) else q for q in quetes_acceptees]:
+                continue
+
+            bonne = normaliser(quete.get("reponse_attendue", ""))
+            if normaliser(contenu) == bonne:
+                accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": {"id": quete["id"]}}})
+                completed_collection.update_one(
+                    {"_id": user_id},
+                    {"$addToSet": {"quetes": {"id": quete["id"], "nom": quete["nom"], "categorie": quete["categorie"]}},
+                     "$set": {"pseudo": user.name}},
+                    upsert=True
+                )
+                utilisateurs.update_one(
+                    {"_id": user_id},
+                    {"$inc": {"lumes": quete["recompense"]},
+                     "$setOnInsert": {"pseudo": user.name, "derniere_offrande": {}, "roles_temporaires": {}}},
+                    upsert=True
+                )
+                await message.channel.send(
+                    f"✅ Parfait ! Tu as complété **{quete['nom']}** et gagné **{quete['recompense']} Lumes** !"
+                )
+                return
+
+    await bot.process_commands(message)
+
+# ======================
+#  SCHEDULER + READY
+# ======================
+_scheduler = None
 
 @bot.event
 async def on_connect():
@@ -443,5 +556,43 @@ async def on_resumed():
 
 @bot.event
 async def on_ready():
-    print(f"✅ on_ready() — connecté en tant que {bot.user} (latence {bot.latency*1000:.0f} ms)")
+    global _scheduler
+    print(f"✅ SMOKE: connecté en tant que {bot.user} (latence {round(bot.latency*1000)} ms)")
 
+    # 1) Views persistantes
+    try:
+        await register_persistent_views()
+        print("🧷 Views persistantes enregistrées.")
+    except Exception as e:
+        print("⚠️ register_persistent_views error:", e)
+
+    # 2) Sync des slash commands
+    try:
+        await bot.tree.sync()
+        print("🌿 Slash commands synchronisées.")
+    except Exception as e:
+        print("⚠️ Slash sync error:", e)
+
+    # 3) Scheduler
+    if _scheduler is None:
+        _scheduler = AsyncIOScheduler(timezone=TZ_PARIS)
+        # Tous les jours 10:30 → journalières
+        _scheduler.add_job(lambda: bot.loop.create_task(poster_journalieres()),
+                           CronTrigger(hour=10, minute=30))
+        # Chaque lundi 10:31 → hebdo (décalé d’1 min)
+        _scheduler.add_job(lambda: bot.loop.create_task(poster_hebdo()),
+                           CronTrigger(day_of_week='mon', hour=10, minute=31))
+        # Annonce après hebdo
+        if ANNOUNCE_CHANNEL_ID:
+            _scheduler.add_job(lambda: bot.loop.create_task(annoncer_mise_a_jour()),
+                               CronTrigger(day_of_week='mon', hour=10, minute=32))
+        _scheduler.start()
+        print("⏰ Scheduler démarré (journalières quotidiennes, hebdo le lundi).")
+
+# ======================
+#  RUN
+# ======================
+if __name__ == "__main__":
+    if not DISCORD_TOKEN or not MONGO_URI or not QUESTS_CHANNEL_ID:
+        print("❌ DISCORD_TOKEN / MONGO_URI / QUESTS_CHANNEL_ID manquant(s).")
+    bot.run(DISCORD_TOKEN)
