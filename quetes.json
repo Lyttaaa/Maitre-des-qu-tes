@@ -176,6 +176,20 @@
       "channel": "œuvres-des-voyageurseuses",
       "reponse_attendue": null,
       "recompense": 4
+    },
+    {
+      "id": "QI012",
+      "nom": "Le Portail de Lumharel",
+      "resume": "Comment maintenir le Portail de lumharel ouvert?",
+      "description": "D'après les chercheurs, poser un pierre sur les stèle magique autour du portail, aiderait à ce qu'il reste ouvert.",
+      "type": "reaction",
+      "details_mp": "Toi aussi pose ta pierre!.\n\n❗ Instructions :\nRends toi dans **💫portail-de-lumharel**. Puis réagis à son message avec 🪨 valider la quête.",
+      "action": "reaction",
+      "emoji": "🪨",
+      "pnj": null,
+      "channel": "portail-de-lumharel",
+      "reponse_attendue": null,
+      "recompense": 3
     }
   ],
   "Quêtes Recherches": [
