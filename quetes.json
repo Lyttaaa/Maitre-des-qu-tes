@@ -288,7 +288,84 @@
       "emoji": null,
       "reponse_attendue": "Statut",
       "recompense": 7
-    }
+    },
+    {
+      "id": "QR011",
+      "nom": "Souffle Gravé 🌬️",
+      "resume": "Un artisan cherche le nom d’un gardien mineur lié aux moissons juste et à la terre.",
+      "description": "Dans un champ abandonné de Cérathéa, on raconte qu’un esprit ancien bénit ceux qui savent attendre la nuit entière…",
+      "type": "texte",
+      "details_mp": "Qui est ce Gardien mineur des champs ? (archives Lumharel) — Réponds : Quel est son nom ?",
+      "emoji": null,
+      "reponse_attendue": "Rhuvenn",
+      "recompense": 6
+    },
+    {
+      "id": "QR012",
+      "nom": "Éclat des Sources ❄️",
+      "resume": "On cherche le nom d’une région froide au nord-ouest, où naissent des lueurs créatives.",
+      "description": "Au-delà d’Ardental, une terre glacée, où les Sources lumineuses chantent la créativité…",
+      "type": "texte",
+      "details_mp": "Quel est le nom de cette région ? — Réponds par le nom propre.",
+      "emoji": null,
+      "reponse_attendue": "Terres d'Argent",
+      "recompense": 6
+    },
+    {
+      "id": "QR013",
+      "nom": "Le Feu Silencieux 🔨",
+      "resume": "Un apprenti décrit une ville de forges où la mer n’a pas sa place.",
+      "description": "On y entend le métal chanter plus fort que le vent, et pourtant aucun navire n’y reste…",
+      "type": "texte",
+      "details_mp": "De quelle cité s’agit-il ? — Réponds par le nom de la ville.",
+      "emoji": null,
+      "reponse_attendue": "Khârgrûn",
+      "recompense": 6
+    },
+        {
+      "id": "QR014",
+      "nom": "Lumière au Phare 🗼",
+      "resume": "Un marin parle d’une ville guidée par un haut elfe et son phare inutile contre la volonté de la mer.",
+      "description": "On y vient pour se perdre, dit-on. Mais la lumière d’un certain Varhël veille tout de même…",
+      "type": "texte",
+      "details_mp": "Quelle est cette ville ? — Réponds par son nom.",
+      "emoji": null,
+      "reponse_attendue": "Giaard",
+      "recompense": 5
+    },
+    {
+      "id": "QR015",
+      "nom": "Le Grimoire Aux Deux Lunes 📖",
+      "resume": "Un scribe cherche les durées des cycles des deux lunes pour son almanach.",
+      "description": "Astraelis et Vörna ne tournent pas au même rythme…",
+      "type": "texte",
+      "details_mp": "Donne en une seule réponse le format : \"Astraelis – X jours, Vörna – Y jours\".",
+      "emoji": null,
+      "reponse_attendue": "Astraelis – 32 jours, Vörna – 48 jours",
+      "recompense": 7
+    },
+    {
+      "id": "QR016",
+      "nom": "La Vallée Qui Chante 🌬️",
+      "resume": "On cherche le nom d’une région où des tours sur une seule jambe tanguent au vent.",
+      "description": "Certains croient y entendre la voix des Façonneurs eux-mêmes…",
+      "type": "texte",
+      "details_mp": "Quel est le nom de cette vallée ?",
+      "emoji": null,
+      "reponse_attendue": "Vallée des Tours Dansantes",
+      "recompense": 6
+    },
+    {
+      "id": "QR017",
+      "nom": "Le Pacte en Avant‑Poste 📜",
+      "resume": "On cherche la guilde commerciale qui tient un avant‑poste au Haut‑Grerth.",
+      "description": "Elle régularise les échanges et maintient une petite milice pour l’équilibre local…",
+      "type": "texte",
+      "details_mp": "Quel est le nom de cette guilde ?",
+      "emoji": null,
+      "reponse_attendue": "Guilde du Pacte Doré",
+      "recompense": 5
+    },
   ],
   "Quêtes Énigmes": [
   {
@@ -390,6 +467,76 @@
       "details_mp": "Que suis-je?",
       "reponse_attendue": "baguette",
       "recompense": 3
-    }
+    },
+    {
+      "id": "QE011",
+      "nom": "Messager du Ciel 🕊️",
+      "resume": "Un origami danse au vent du festival…",
+      "enonce": "« On m’écrit des vœux sans voix,\nJe vole sans aile ni plume,\nJe garde les secrets des foules,\nEt pourtant je ne suis que papier. »",
+      "type": "texte",
+      "details_mp": "Que suis-je ?",
+      "reponse_attendue": "rouleau volant",
+      "recompense": 3
+    },
+    {
+      "id": "QE012",
+      "nom": "Compagnon des Pas 👣",
+      "resume": "Sur le chemin, quelqu’un avance toujours au même rythme que toi.",
+      "enonce": "« On me suit sans me rattraper,\nJe pars quand tu t’arrêtes,\nJe reviens quand tu repars,\nJe suis la mesure de ta route. »",
+      "type": "texte",
+      "details_mp": "Qui suis-je ?",
+      "reponse_attendue": "pas",
+      "recompense": 3
+    },
+    {
+      "id": "QE014",
+      "nom": "Oeil des Voyageurs 🧭",
+      "resume": "Un disque sans regard montre pourtant la voie.",
+      "enonce": "« Je pointe sans doigt,\nJe tourne sans danser,\nJe parle sans mot,\nEt l’on me suit vers le nord. »",
+      "type": "texte",
+      "details_mp": "Que suis-je ?",
+      "reponse_attendue": "boussole",
+      "recompense": 3
+    },
+    {
+      "id": "QE015",
+      "nom": "Poussière du Temps 🕝",
+      "resume": "Le sable glisse, mais jamais ne s’arrête.",
+      "enonce": "https://imgur.com/a/eVnzJKJ",
+      "type": "texte",
+      "details_mp": "Que suis-je ?",
+      "reponse_attendue": "sablier",
+      "recompense": 3
+    },
+    {
+      "id": "QE016",
+      "nom": "Souffle du Creuset 🔮",
+      "resume": "La vapeur monte, emplie d’odeurs et de promesses.",
+      "enonce": "https://imgur.com/a/MVMOgR7",
+      "type": "texte",
+      "details_mp": "Que suis-je ?",
+      "reponse_attendue": "chaudron",
+      "recompense": 3
+    },
+    {
+      "id": "QE017",
+      "nom": "Murmures Reliés 📖",
+      "resume": "Un souffle d’encre parcourt des pages scellées.",
+      "enonce": "https://imgur.com/a/d3czpYY",
+      "type": "texte",
+      "details_mp": "Que suis-je ?",
+      "reponse_attendue": "grimoire",
+      "recompense": 3
+   },
+   {
+      "id": "QE018",
+      "nom": "Chant des Racines 🌲",
+      "resume": "Sous le vent, mille voix se répondent.",
+      "enonce": "https://imgur.com/a/Rhvlauv",
+      "type": "texte",
+      "details_mp": "Que suis-je ?",
+      "reponse_attendue": "forêt",
+      "recompense": 3
+  }
   ]
 }
