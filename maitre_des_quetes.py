@@ -357,6 +357,78 @@ async def bourse(ctx):
         user = utilisateurs.find_one({"_id": user_id}) or {}
     await ctx.send(f"💰 {ctx.author.mention}, tu possèdes **{user.get('lumes', 0)} Lumes**.")
 
+# Empêche toute mention @everyone/@here/@role
+NO_MENTIONS = discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=False)
+
+@bot.command(name="show_quete")
+async def show_quete(ctx, quest_id: str = None):
+    """
+    Usage: !show_quete QE012   (ou QI019 / QR003)
+    """
+    if quest_id is None:
+        await ctx.send("Usage : `!show_quete <ID>` (ex: `!show_quete QE012`)", allowed_mentions=NO_MENTIONS)
+        return
+
+    quest_id = quest_id.strip().upper()
+
+    # 1) Récupérer la quête par ID depuis ta source (JSON/DB)
+    quete = charger_quete_par_id(quest_id)  # 👉 à adapter: ta fonction utilitaire existante
+    if not quete:
+        await ctx.send(f"Je ne trouve pas la quête `{quest_id}`.", allowed_mentions=NO_MENTIONS)
+        return
+
+    # 2) Déterminer la catégorie depuis l'ID (ou stocke-la dans l'objet quete si dispo)
+    if quest_id.startswith("QI"):
+        categorie = "Quêtes Interactions"
+    elif quest_id.startswith("QR"):
+        categorie = "Quêtes Recherches"
+    elif quest_id.startswith("QE"):
+        categorie = "Quêtes Énigmes"
+    else:
+        categorie = "Quête"
+
+    # 3) Construire l'embed comme en prod (sans publication/DB)
+    if categorie == "Quêtes Énigmes":
+        embed = discord.Embed(
+            title="🧩 Quête Énigmes (APERÇU)",
+            description=f"**{quete['id']} – {quete['nom']}**",
+            color=COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
+        )
+        img = quete.get("image_url")
+        if img:
+            # Rébus visuel (remplace l’énoncé)
+            embed.add_field(name="💬 Rébus", value="Observe bien ce symbole...", inline=False)
+            embed.set_image(url=img)
+        else:
+            # Énigme texte
+            embed.add_field(name="💬 Énoncé", value=quete["enonce"], inline=False)
+
+        embed.add_field(name="👉 Objectif", value="Trouve la réponse et réponds-moi ici.", inline=False)
+        embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
+
+    elif categorie == "Quêtes Recherches":
+        embed = discord.Embed(
+            title=f"🔎 {categorie} (APERÇU)",
+            description=f"**{quete['id']} – {quete['nom']}**",
+            color=COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
+        )
+        embed.add_field(name="💬 Indice", value=quete["description"], inline=False)
+        embed.add_field(name="👉 Objectif", value=quete["details_mp"], inline=False)
+        embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
+
+    else:  # Quêtes Interactions
+        embed = discord.Embed(
+            title=f"🤝 {categorie} (APERÇU)",
+            description=f"**{quete['id']} – {quete['nom']}**",
+            color=COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
+        )
+        embed.add_field(name="💬 Description", value=quete["description"], inline=False)
+        embed.add_field(name="👉 Objectif", value=quete["details_mp"], inline=False)
+        embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
+
+    # 4) Envoyer sans mention
+    await ctx.send(embed=embed, allowed_mentions=NO_MENTIONS)
+
 # ======================
 #  EVENTS: COMPLETION
 # ======================
