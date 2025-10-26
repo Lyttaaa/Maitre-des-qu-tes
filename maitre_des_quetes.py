@@ -180,7 +180,17 @@ class VueAcceptation(View):
                 description=f"**{self.quete['id']} – {self.quete['nom']}**",
                 color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
             )
-            embed.add_field(name="💬 Énoncé", value=self.quete["enonce"], inline=False)
+
+            img = self.quete.get("image_url")
+
+            if img:
+                # Si un rébus visuel existe, on ne montre pas l’énoncé texte
+                embed.add_field(name="💬 Rébus", value="Observe bien ce symbole...", inline=False)
+                embed.set_image(url=img)
+            else:
+                # Sinon on affiche le texte d’énigme classique
+                embed.add_field(name="💬 Énoncé", value=self.quete["enonce"], inline=False)
+
             embed.add_field(name="👉 Objectif", value="Trouve la réponse et réponds-moi ici.", inline=False)
             embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
         else:
