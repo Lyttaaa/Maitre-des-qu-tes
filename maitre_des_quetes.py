@@ -13,6 +13,67 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 import pytz
 
+# --- Loader quetes + index par ID ------------------------------------------
+import json
+import os
+
+# Chemin vers ton JSON (adapte si besoin)
+CHEMIN_QUETES = os.getenv("QUETES_JSON_PATH", "quetes.json")
+
+# Cache global
+QUETES_RAW = None
+QUETES_INDEX = {}   # {"QE012": {"id": "...", ...}, ...}
+CATEGORIE_PAR_ID = {}  # {"QE012": "Quêtes Énigmes", ...}
+
+def charger_toutes_les_quetes():
+    global QUETES_RAW, QUETES_INDEX, CATEGORIE_PAR_ID
+    if QUETES_RAW is not None:
+        return  # déjà chargé
+
+    with open(CHEMIN_QUETES, "r", encoding="utf-8") as f:
+        QUETES_RAW = json.load(f)
+
+    QUETES_INDEX.clear()
+    CATEGORIE_PAR_ID.clear()
+
+    # Liste des catégories possibles selon ta structure
+    categories_possibles = [
+        "Quêtes Interactions",
+        "Quêtes Recherches",
+        "Quêtes Énigmes",
+        # si tu as aussi les "(AJOUTS)" dans un autre fichier/canvas, ajoute-les ici :
+        "Quêtes Interactions (AJOUTS)",
+        "Quêtes Recherches (AJOUTS)",
+        "Quêtes Énigmes (AJOUTS)",
+    ]
+
+    for cat in categories_possibles:
+        if cat not in QUETES_RAW:
+            continue
+        for q in QUETES_RAW[cat]:
+            qid = q.get("id", "").upper()
+            if not qid:
+                continue
+            QUETES_INDEX[qid] = q
+            # si tes ajouts portent la même nature, on “normalize” la catégorie
+            if "Interaction" in cat:
+                CATEGORIE_PAR_ID[qid] = "Quêtes Interactions"
+            elif "Recherche" in cat:
+                CATEGORIE_PAR_ID[qid] = "Quêtes Recherches"
+            elif "Énigme" in cat or "Enigme" in cat:
+                CATEGORIE_PAR_ID[qid] = "Quêtes Énigmes"
+            else:
+                CATEGORIE_PAR_ID[qid] = cat
+
+def charger_quete_par_id(quest_id: str):
+    """Retourne l'objet quête (dict) pour un ID donné, sinon None."""
+    charger_toutes_les_quetes()
+    return QUETES_INDEX.get(quest_id.upper())
+
+def categorie_par_id(quest_id: str) -> str:
+    charger_toutes_les_quetes()
+    return CATEGORIE_PAR_ID.get(quest_id.upper(), "Quête")
+
 # ======================
 #  CONFIG DISCORD & DB
 # ======================
@@ -357,7 +418,9 @@ async def bourse(ctx):
         user = utilisateurs.find_one({"_id": user_id}) or {}
     await ctx.send(f"💰 {ctx.author.mention}, tu possèdes **{user.get('lumes', 0)} Lumes**.")
 
-# Empêche toute mention @everyone/@here/@role
+import discord
+from discord.ext import commands
+
 NO_MENTIONS = discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=False)
 
 @bot.command(name="show_quete")
@@ -371,23 +434,14 @@ async def show_quete(ctx, quest_id: str = None):
 
     quest_id = quest_id.strip().upper()
 
-    # 1) Récupérer la quête par ID depuis ta source (JSON/DB)
-    quete = charger_quete_par_id(quest_id)  # 👉 à adapter: ta fonction utilitaire existante
+    quete = charger_quete_par_id(quest_id)
     if not quete:
         await ctx.send(f"Je ne trouve pas la quête `{quest_id}`.", allowed_mentions=NO_MENTIONS)
         return
 
-    # 2) Déterminer la catégorie depuis l'ID (ou stocke-la dans l'objet quete si dispo)
-    if quest_id.startswith("QI"):
-        categorie = "Quêtes Interactions"
-    elif quest_id.startswith("QR"):
-        categorie = "Quêtes Recherches"
-    elif quest_id.startswith("QE"):
-        categorie = "Quêtes Énigmes"
-    else:
-        categorie = "Quête"
+    categorie = categorie_par_id(quest_id)
 
-    # 3) Construire l'embed comme en prod (sans publication/DB)
+    # --- Construction d’embed (même logique que tes DMs) ---
     if categorie == "Quêtes Énigmes":
         embed = discord.Embed(
             title="🧩 Quête Énigmes (APERÇU)",
@@ -396,14 +450,12 @@ async def show_quete(ctx, quest_id: str = None):
         )
         img = quete.get("image_url")
         if img:
-            # Rébus visuel (remplace l’énoncé)
             embed.add_field(name="💬 Rébus", value="Observe bien ce symbole...", inline=False)
             embed.set_image(url=img)
         else:
-            # Énigme texte
             embed.add_field(name="💬 Énoncé", value=quete["enonce"], inline=False)
 
-        embed.add_field(name="👉 Objectif", value="Trouve la réponse et réponds-moi ici.", inline=False)
+        embed.add_field(name="👉 Objectif", value="Tro uve la réponse et réponds-moi ici.", inline=False)
         embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
 
     elif categorie == "Quêtes Recherches":
@@ -416,7 +468,7 @@ async def show_quete(ctx, quest_id: str = None):
         embed.add_field(name="👉 Objectif", value=quete["details_mp"], inline=False)
         embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
 
-    else:  # Quêtes Interactions
+    else:  # Interactions
         embed = discord.Embed(
             title=f"🤝 {categorie} (APERÇU)",
             description=f"**{quete['id']} – {quete['nom']}**",
@@ -426,8 +478,8 @@ async def show_quete(ctx, quest_id: str = None):
         embed.add_field(name="👉 Objectif", value=quete["details_mp"], inline=False)
         embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
 
-    # 4) Envoyer sans mention
     await ctx.send(embed=embed, allowed_mentions=NO_MENTIONS)
+
 
 # ======================
 #  EVENTS: COMPLETION
