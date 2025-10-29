@@ -32,11 +32,17 @@
       "resume": "Le boulanger local a besoin d’un coup de main…",
       "description": "Le boulanger de Molgel, toujours jovial, t’a lancé un clin d’œil entre deux fournées. « Hé, aventurier ! Tu m’donnes un coup de main ? » Sa miche du matin est en retard. Il t’attend, panié en main.",
       "type": "reaction",
-      "details_mp": "Le Boulanger à besoin que tu lui livre sa Miche.\n\n❗ Instructions :\nSalue le boulanger sur le canal **⛲grand-place** et réagis à son message avec 🥖 pour lui apporter ton aide !\n\nTon message doit contenir : `Bonjour, @Boulanger, livraison",
+      "details_mp": "Le Boulanger à besoin que tu lui livre sa Miche.\n\n❗ Instructions :\nSalue le boulanger sur le canal **⛲grand-place** et réagis à son message avec 🍞 pour lui apporter ton aide !\n\nTon message doit contenir : @Boulanger, miche",
       "action": "reaction",
-      "emoji": "🥖",
+      "emoji": "🍞",
       "pnj": "Boulanger",
-      "channel": "grand-place",
+      "repliques": [
+      "Ah, ma miche préférée est enfin là ! Merci {user} 🍞",
+      "Sans toi {user}, les habitants auraient faim aujourd’hui !",
+      "Le four était prêt, il ne manquait plus que toi, {user} !",
+      "Encore une mission pain-complie, merci {user} !",
+      "Les miches sont en route grâce à toi ! Tu mérites une croûte dorée 🍞",
+      "channel": "grand-place"],
       "reponse_attendue": null,
       "recompense": 6
     },
@@ -59,10 +65,16 @@
       "resume": "L’Aubergiste a besoin d’ingrédients pour sa fameuse omelette champêtre.",
       "description": "L’Aubergiste t’a glissé un mot, entre deux pintes : « Mes champignons sont en retard, et j’ai une omelette à préparer avant minuit. Si tu les trouves… » Elle t’a adressé un clin d’œil complice. Tu sais ce qu’il te reste à faire.",
       "type": "reaction",
-      "details_mp": "L’Aubergiste a besoin d’ingrédients pour sa fameuse omelette champêtre.\n\n❗ Instructions :\nSalue l’aubergiste au canal **💬comptoir** et indique-lui que tu as une livraison de champignons pour lui. Puis réais à son message avec 🍄 pour valider la livraison.\n\nTon message doit contenir : Bonjour, @Aubergiste, livraison, champignon",
+      "details_mp": "L’Aubergiste a besoin d’ingrédients pour sa fameuse omelette champêtre.\n\n❗ Instructions :\nSalue l’aubergiste au canal **💬comptoir** et indique-lui que tu as une livraison de champignons pour lui. Puis réais à son message avec 🍄 pour valider la livraison.\n\nTon message doit contenir : @Aubergiste, livraison, champignons",
       "action": "reaction",
       "emoji": "🍄",
       "pnj": "Aubergiste",
+      "repliques": [
+      "Oh merci {user}, j'attendais justement cette livraison 🍄 !",
+      "Tu tombes à pic {user} ! Mon omelette de minuit va être parfaite grâce à toi.",
+      "Héhé, toujours au rendez-vous toi, {user} ! Allez, bois un coup, c’est offert ! 🍻",
+      "Un vrai aventurier, {user} ! Merci pour ces champignons !",
+      "Je commençais à m’inquiéter, {user}... Heureusement que t’es là !"],
       "channel": "comptoir",
       "reponse_attendue": null,
       "recompense": 7
@@ -77,6 +89,12 @@
       "action": "reaction",
       "emoji": "🎭",
       "pnj": "Saltimbanque",
+      "repliques": [
+      "MAGNIFIQUE {user} !! SUBLIMISSIME!! ✨",
+      "Excellent {user}, tu es fait.e pour faire de la scène mon ami.e!!!",
+      "Mmmm nan Cela ne me plait pas du tout {user}. Je vais demander à quelqu'un d'autre finalement !",
+      "C'est pas mal {user}, avec du travail du seras prêt.e pour le grand jour !",
+      "Horrible!!! Quelle tragédie, je n'ai jamais vu quelqu'un d'aussi mauvais!!! Aaaah"],
       "channel": "grand-place",
       "reponse_attendue": null,
       "recompense": 9
@@ -87,10 +105,16 @@
       "resume": "Un jeu de cartes douteux se déroule à la **🍻table-du-fond**, et tu es sollicité pour un petit coup de pouce.",
       "description": "À la **🍻table-du-fond**, l'atmosphère est un peu plus tendue que d’habitude. Un homme en manteau sombre t’interpelle discrètement. « Tu vois, ces cartes-là… Elles sont légèrement manipulées. Ce n’est pas tout à fait un jeu équitable, et j’ai besoin de quelqu’un pour faire diversion. Si tu m’aides à faire en sorte que les cartes tombent de mon côté, une part des gains sera à toi. »",
       "type": "reaction",
-      "details_mp": "L'Homme Mystérieux veux que tu déconcentre son adversaire pour qu'il fasse son tour de passe passe.\n\n❗ Instructions :\nApproche toi discrètement de la **🍻table-du-fond** et fait semblant de trébucher pour distraire son adversaire. Puis réagis à son message avec 🃏 pour valider la quêtes.\n\nTon message doit contenir : @Homme Mystérieux, Oula, Ouille, maladroit/maladroite, trébuché",
+      "details_mp": "L'Homme Mystérieux veux que tu déconcentre son adversaire pour qu'il fasse son tour de passe passe.\n\n❗ Instructions :\nApproche toi discrètement de la **🍻table-du-fond** et fait semblant de trébucher pour distraire son adversaire. Puis réagis à son message avec 🃏 pour valider la quêtes.\n\nTon message doit contenir : @Homme Mystérieux, trébuché",
       "action": "reaction",
       "emoji": "🃏",
       "pnj": "Homme Mystérieux",
+      "repliques": [
+      "Héhéhé..😈 Merci {user} *te fait un clin d'oeil*",
+      "*Acquiesce en guise de remerciement*",
+      "Concentre toi mon ami! *dit-il a son adversaire* En réalité il avait déjà fait son tour de passe passe, grace à toi en plus..",
+      "Ola, tu ne veux pas l'aider un peu? *dit-il à son adversaire* Pendant que tu te fais aider, l'Homme Mystérieux en profite pour échanger ses cartes discrètement et te fait un clin d'oeil.",
+      "*ne dit rien* en profite pour changer ses cartes..."],
       "channel": "table-du-fond",
       "reponse_attendue": null,
       "recompense": 20
@@ -101,10 +125,16 @@
       "resume": "Un contrebandier de vin cherche à passer discrètement une cargaison d'alcool hors-la-loi.",
       "description": "Un contrebandier avec un regard furtif t’approche au comptoir de l’auberge. « J’ai de l’alcool interdit que je dois vendre en dehors des règles. Tu pourrais m’aider à le faire sortir de la ville sans attirer l’attention des gardes ? »",
       "type": "reaction",
-      "details_mp": "Le contrebandier souhaite que tu l'aide à sortir sa cargaison hors de la ville sans se faire prendre.\n\n❗ Instructions :\nRetrouve le au **💬comptoir** et fait lui signe que tu accepte. Puis réagis à son message avec 🍾 pour valider la quêtes.\n\nTon message doit contenir: psst, @Contrebandier, accepte, aider, cargaison",
+      "details_mp": "Le contrebandier souhaite que tu l'aide à sortir sa cargaison hors de la ville sans se faire prendre.\n\n❗ Instructions :\nRetrouve le au **💬comptoir** et fait lui signe que tu accepte. Puis réagis à son message avec 🍾 pour valider la quêtes.\n\nTon message doit contenir: psst, @Contrebandier, cargaison",
       "action": "reaction",
       "emoji": "🍾",
       "pnj": "Contrebandier",
+      "repliques": [
+      "Très bien, approche {user}... alors du coup on va faire comme ça, vers minuit...*il se met à chuchoter de plus en plus bas...*",
+      "Pas si fort!! Chuut...vient par là {user}",
+      "Attention tu va te faire prendre {user}!",
+      "Parfait! Reste discret.e {user}...Allons discuter plus loin...",
+      "Excellent, voici le plan {user}..."],
       "channel": "comptoir",
       "reponse_attendue": null,
       "recompense": 10
@@ -141,10 +171,16 @@
       "resume": "Un musicien de rue joue pour ceux qui n’ont plus rien…",
       "description": "Au détour de la grand-place, un musicien à la barbe grise joue un air doux, les yeux fermés. Son chapeau renversé devant lui n’a que quelques pièces. À ton passage, il rouvre un œil fatigué. « Quelques Lumes, juste assez pour manger ce soir… »",
       "type": "reaction",
-      "details_mp": "Le musicien te demande des Lumes pour manger ce soir. Vos regards se sont croisés, tu ne peux pas fuir, tu reste un peu l'écouter, finalement c'est joli comme mélodie.\n\n❗ Instructions :\nRends toi sur la grand place, dit lui que ce qu'il joue est agréable. Puis réagis son message avec 👛 pour lui donner 5 Lumes et valider la quête.\n\nTon message doit contenir: @Musicien, bravo, magnifique, mélodie",
+      "details_mp": "Le musicien te demande des Lumes pour manger ce soir. Vos regards se sont croisés, tu ne peux pas fuir, tu reste un peu l'écouter, finalement c'est joli comme mélodie.\n\n❗ Instructions :\nRends toi sur la grand place, dit lui que ce qu'il joue est agréable. Puis réagis son message avec 👛 pour lui donner 5 Lumes et valider la quête.\n\nTon message doit contenir: @Musicien, bravo",
       "action": "reaction",
       "emoji": "👛",
       "pnj": "Musicien",
+      "repliques": [
+      "Merci {user}...Merci pour votre générosité..*s'incline pour te remercier*",
+      "Vous savez {user}, je chante, par tous temps...mais ça ne rapporte pas toujours...mon chapeau est souvent vide...",
+      "Je salue votre geste {user}, je pourrait m'offrir un repas ce soir, je vous en suis reconnaissant.",
+      "*il se met à chanter de plus belle pour vous remercier d'avoir déposé quelques Lumes dans son chapeau*",
+      "Que les Souffles vous bénissent {user}, vous avez fait un homme heureux aujourd'hui.."],
       "channel": "grand-place",
       "reponse_attendue": null,
       "recompense": -5
@@ -169,10 +205,16 @@
       "resume": "Une artiste en quête de titre cherche ton regard neuf.",
       "description": "Une femme t’interpelle dans œuvres-des-voyageurs. « J’ai terminé ce tableau, mais… il me manque un nom. Peux-tu lui en offrir un ? Un mot, une idée, une sensation ? »",
       "type": "reaction",
-      "details_mp": "L'artiste souhaite que tu l'aide à trouver un nom pour son dernier tableau.\n\n❗ Instructions :\nRends toi dans **🎨œuvres-des-voyageurseuses**. Propose à la peintre un nom pour sa peinture. Puis réagis à son message avec 🎨 valider la quête.\n\nTon message doit contenir: @Peintre, réfléchir, propose, titre",
+      "details_mp": "L'artiste souhaite que tu l'aide à trouver un nom pour son dernier tableau.\n\n❗ Instructions :\nRends toi dans **🎨œuvres-des-voyageurseuses**. Propose à la peintre un nom pour sa peinture. Puis réagis à son message avec 🎨 valider la quête.\n\nTon message doit contenir: @Peintre, titre",
       "action": "reaction",
       "emoji": "🎨",
       "pnj": "Peintre",
+      "repliques": [
+      "WOW ça c'est un titre {user} !!",
+      "C'est parfait, ça correspond totalement à ce que j'avais en tête, merci {user}!",
+      "Mmm je ne suis pas convaincue {user}, je vais chercher encore.",
+      "Je crois que c'est exactement ce qu'il me fallait {user}! *dit-elle en signant son oeuvre*",
+      "Merciii {user} Grace à toi je vais enfin pouvoir l'afficher dans ma galerie !"],
       "channel": "œuvres-des-voyageurseuses",
       "reponse_attendue": null,
       "recompense": 4
@@ -218,7 +260,32 @@
       "channel": "table-des-explorateurs",
       "reponse_attendue": null,
       "recompense": 3
-    }
+    },
+    {
+      "id": "QI015",
+      "nom": "La Tournée du Fourgon 🍞",
+      "resume": "Le Boulanger doit livrer du pain à la Guilde des Souffles.",
+      "description": "Le Boulanger semble pressé. Il a besoin d’un coup de main pour transporter des miches encore chaudes jusqu’au comptoir.",
+      "type": "multi_step",
+      "pnj": "Boulanger",
+      "recompense": 8,
+      "steps": [
+        {
+          "numero": 1,
+          "channel": "grand-place",
+          "mots_cles": ["@Boulanger", "livraison", "pain"],
+          "replique_pnj": "Ah, {user} ! Tu tombes bien, je dois livrer du pain à la Guilde des Souffles. Retrouve-moi au **#💬comptoir** pour m’aider à décharger la charrette !"
+        },
+        {
+          "numero": 2,
+          "channel": "comptoir",
+          "mots_cles": ["@Boulanger", "charrette", "pain"],
+          "emoji": "🥖",
+          "replique_pnj": "Te voilà ! Parfait, pose les paniers ici... et **réagis avec 🥖** sur ce message pour sceller la livraison."
+        }
+      ]
+     }
+
   ],
   "Quêtes Recherches": [
     {
