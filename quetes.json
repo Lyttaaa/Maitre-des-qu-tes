@@ -41,7 +41,8 @@
       "Sans toi {user}, les habitants auraient faim aujourd’hui !",
       "Le four était prêt, il ne manquait plus que toi, {user} !",
       "Encore une mission pain-complie, merci {user} !",
-      "Les miches sont en route grâce à toi ! Tu mérites une croûte dorée 🍞",
+      "Les miches sont en route grâce à toi ! Tu mérites une croûte dorée 🍞"
+      ],
       "channel": "grand-place"],
       "reponse_attendue": null,
       "recompense": 6
@@ -65,7 +66,7 @@
       "resume": "L’Aubergiste a besoin d’ingrédients pour sa fameuse omelette champêtre.",
       "description": "L’Aubergiste t’a glissé un mot, entre deux pintes : « Mes champignons sont en retard, et j’ai une omelette à préparer avant minuit. Si tu les trouves… » Elle t’a adressé un clin d’œil complice. Tu sais ce qu’il te reste à faire.",
       "type": "reaction",
-      "details_mp": "L’Aubergiste a besoin d’ingrédients pour sa fameuse omelette champêtre.\n\n❗ Instructions :\nSalue l’aubergiste au canal **💬comptoir** et indique-lui que tu as une livraison de champignons pour lui. Puis réais à son message avec 🍄 pour valider la livraison.\n\nTon message doit contenir : @Aubergiste, livraison, champignons",
+      "details_mp": "L’Aubergiste a besoin d’ingrédients pour sa fameuse omelette champêtre.\n\n❗ Instructions :\nSalue l’aubergiste au canal **💬comptoir** et indique-lui que tu as une livraison de champignons pour lui. Puis réagis à son message avec 🍄 pour valider la livraison.\n\nTon message doit contenir : @Aubergiste, livraison, champignons",
       "action": "reaction",
       "emoji": "🍄",
       "pnj": "Aubergiste",
@@ -74,7 +75,8 @@
       "Tu tombes à pic {user} ! Mon omelette de minuit va être parfaite grâce à toi.",
       "Héhé, toujours au rendez-vous toi, {user} ! Allez, bois un coup, c’est offert ! 🍻",
       "Un vrai aventurier, {user} ! Merci pour ces champignons !",
-      "Je commençais à m’inquiéter, {user}... Heureusement que t’es là !"],
+      "Je commençais à m’inquiéter, {user}... Heureusement que t’es là !"
+      ],
       "channel": "comptoir",
       "reponse_attendue": null,
       "recompense": 7
