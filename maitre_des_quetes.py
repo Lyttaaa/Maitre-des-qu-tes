@@ -95,6 +95,7 @@ accepted_collection = db.quetes_acceptees
 completed_collection = db.quetes_terminees
 utilisateurs = db.utilisateurs
 rotation_collection = db.rotation_quetes
+user_state = db.user_state
 
 TZ_PARIS = pytz.timezone("Europe/Paris")
 
