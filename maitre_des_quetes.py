@@ -234,6 +234,23 @@ class VueAcceptation(View):
             upsert=True
         )
 
+        # ➕ ICI : on ajoute la création d’un état actif pour les quêtes d’interaction
+        if self.categorie == "Quêtes Interactions":
+            etat = {
+                "quest_id": self.quete["id"],
+                "type": self.quete.get("type", "interaction"),  # "multi_step" ou "interaction"
+                "pnj": (self.quete.get("pnj") or "").strip(),
+                # progression multi-étapes
+                "current_step": 1 if self.quete.get("type") == "multi_step" else None,
+                "awaiting_reaction": False,
+                "emoji": None
+            }
+            user_state.update_one(
+                {"_id": str(interaction.user.id)},
+                {"$set": {"active_interaction": etat}},
+                 upsert=True
+            )
+            
         # MP d’instructions
         if self.categorie == "Quêtes Énigmes":
             embed = discord.Embed(
