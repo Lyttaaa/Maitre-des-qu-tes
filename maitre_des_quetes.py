@@ -134,13 +134,13 @@ def normaliser(texte):
     return texte
 
 def charger_quetes():
-    with open("quetes.json", "r", encoding="utf-8") as f:
+    with open(CHEMIN_QUETES, "r", encoding="utf-8") as f:
         data = json.load(f)
-    # Injecter la catégorie dans chaque quête
     for categorie, quetes in data.items():
         for quete in quetes:
             quete["categorie"] = categorie
     return data
+
 
 async def purger_messages_categorie(channel: discord.TextChannel, categorie: str, limit=100):
     """
