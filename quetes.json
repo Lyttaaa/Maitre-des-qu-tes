@@ -251,20 +251,6 @@
     },
     {
       "id": "QI014",
-      "nom": "Recherches assidues 🔎",
-      "resume": "Les recherches sont extrêmement importantes pour les archives.",
-      "description": "Nombreux.ses sont les explorateurs et les exploratrices qui parcourent le monde de Lumharel en quêtes de secrets et de découvertes.",
-      "type": "reaction",
-      "details_mp": "Montre leur ton soutient, iels apprécieront ton geste.\n\n❗ Instructions :\nRends toi dans **📜table-des-explorateurs**. Puis réagis à son message avec 🧭 pour valider la quête.",
-      "action": "reaction",
-      "emoji": "🧭",
-      "pnj": null,
-      "channel": "table-des-explorateurs",
-      "reponse_attendue": null,
-      "recompense": 3
-    },
-    {
-      "id": "QI015",
       "nom": "La Tournée du Fourgon 🍞",
       "resume": "Le Boulanger doit livrer du pain à la Guilde des Souffles.",
       "description": "Le Boulanger semble pressé. Il a besoin d’un coup de main pour transporter des miches encore chaudes jusqu’au comptoir.",
