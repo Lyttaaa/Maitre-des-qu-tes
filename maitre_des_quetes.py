@@ -89,13 +89,15 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 QUESTS_CHANNEL_ID = int(os.getenv("QUESTS_CHANNEL_ID", "0"))
 ANNOUNCE_CHANNEL_ID = int(os.getenv("ANNOUNCE_CHANNEL_ID", "0"))  # optionnel
 
-client = MongoClient(MONGO_URI)
-db = client.lumharel_bot
-accepted_collection = db.quetes_acceptees
-completed_collection = db.quetes_terminees
-utilisateurs = db.utilisateurs
-rotation_collection = db.rotation_quetes
-user_state = db.user_state
+# --- Connexion MongoDB ---
+try:
+    mongo_client = MongoClient(MONGO_URI) if MONGO_URI else None
+    db = mongo_client.lumharel_bot if mongo_client is not None else None
+    user_state = db.user_state if db is not None else None
+
+    if db is None:
+        log.warning("⚠️ MONGO_URI défini mais DB non accessible (vér
+
 
 TZ_PARIS = pytz.timezone("Europe/Paris")
 
