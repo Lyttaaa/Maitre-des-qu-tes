@@ -179,139 +179,141 @@ def get_quete_non_postee(categorie, quetes_possibles):
     )
     return quete
 
-# ======================
-#  VUE BOUTON "ACCEPTER"
-# ======================
-class VueAcceptation(View):
-    def __init__(self, quete, categorie):
-        super().__init__(timeout=None)
-        self.quete = quete
-        self.categorie = categorie
 
-    @discord.ui.button(label="Accepter 📥", style=discord.ButtonStyle.green)
-    async def accepter(self, interaction: discord.Interaction, button: discord.ui.Button):
-        user_id = str(interaction.user.id)
-        quete_id = self.quete["id"]
+# ====================== 
+# VUE BOUTON "ACCEPTER" 
+# ======================
+@discord.ui.button(label="Accepter 📥", style=discord.ButtonStyle.green)
+async def accepter(self, interaction: discord.Interaction, button: discord.ui.Button):
+    user_id = str(interaction.user.id)
+    quete_id = self.quete["id"]
 
-        # déjà acceptée ?
-        quete_data = accepted_collection.find_one({"_id": user_id})
-        if quete_data and any(q.get("id") == quete_id for q in quete_data.get("quetes", [])):
+    # déjà acceptée ?
+    quete_data = accepted_collection.find_one({"_id": user_id})
+    if quete_data and any(q.get("id") == quete_id for q in quete_data.get("quetes", [])):
+        await interaction.response.send_message(
+            "Tu as déjà accepté cette quête ! Consulte `!mes_quetes`.",
+            ephemeral=True
+        )
+        return
+
+    # déjà terminée ? (sauf journalières)
+    deja_faite = completed_collection.find_one(
+        {"_id": user_id, "quetes": {"$elemMatch": {"id": quete_id}}}
+    )
+    if deja_faite and self.categorie != "Quêtes Journalières":
+        try:
+            await interaction.user.send(
+                f"📪 Tu as déjà terminé **{self.quete['nom']}** (non rejouable). "
+                "Consulte `!mes_quetes`."
+            )
+        except discord.Forbidden:
             await interaction.response.send_message(
-                "Tu as déjà accepté cette quête ! Consulte `!mes_quetes`.",
+                "Tu as déjà terminé cette quête (non rejouable), et je ne peux pas t’envoyer de MP.",
                 ephemeral=True
             )
-            return
+        return
 
-        # déjà terminée ? (sauf journalières)
-        deja_faite = completed_collection.find_one(
-            {"_id": user_id, "quetes": {"$elemMatch": {"id": quete_id}}}
-        )
-        if deja_faite and self.categorie != "Quêtes Journalières":
-            try:
-                await interaction.user.send(
-                    f"📪 Tu as déjà terminé **{self.quete['nom']}** (non rejouable). "
-                    "Consulte `!mes_quetes`."
-                )
-            except discord.Forbidden:
-                await interaction.response.send_message(
-                    "Tu as déjà terminé cette quête (non rejouable), et je ne peux pas t’envoyer de MP.",
-                    ephemeral=True
-                )
-            return
+    # Enregistrer l'acceptation
+    accepted_collection.update_one(
+        {"_id": user_id},
+        {"$addToSet": {
+            "quetes": {
+                "categorie": self.categorie,
+                "id": quete_id,
+                "nom": self.quete["nom"]
+            }
+        }, "$set": {"pseudo": interaction.user.name}},
+        upsert=True
+    )
 
-        # Enregistrer l'acceptation
-        accepted_collection.update_one(
-            {"_id": user_id},
-            {"$addToSet": {
-                "quetes": {
-                    "categorie": self.categorie,
-                    "id": quete_id,
-                    "nom": self.quete["nom"]
-                }
-            }, "$set": {"pseudo": interaction.user.name}},
+    # ➕ État actif (utilisé par le bot PNJ) — UNE SEULE FOIS
+    if self.categorie == "Quêtes Interactions":
+        etat = {
+            "quest_id": self.quete["id"],
+            "type": self.quete.get("type", "interaction"),  # "multi_step" ou "interaction"
+            "pnj": (self.quete.get("pnj") or "").strip(),
+            "current_step": 1 if self.quete.get("type") == "multi_step" else None,
+            "awaiting_reaction": False,
+            "emoji": None
+        }
+        user_state.update_one(
+            {"_id": str(interaction.user.id)},
+            {"$set": {"active_interaction": etat}},
             upsert=True
         )
 
-        # ➕ État actif (utilisé par le bot PNJ) — UNE SEULE FOIS
-        if self.categorie == "Quêtes Interactions":
-            etat = {
-                "quest_id": self.quete["id"],
-                "type": self.quete.get("type", "interaction"),  # "multi_step" ou "interaction"
-                "pnj": (self.quete.get("pnj") or "").strip(),
-                "current_step": 1 if self.quete.get("type") == "multi_step" else None,
-                "awaiting_reaction": False,
-                "emoji": None
-            }
-            user_state.update_one(
-                {"_id": str(interaction.user.id)},
-                {"$set": {"active_interaction": etat}},
-                upsert=True
-            )
-
-        # MP d’instructions
-        if self.categorie == "Quêtes Énigmes":
-            embed = discord.Embed(
-                title="🧩 Quête Énigmes",
-                description=f"**{self.quete['id']} – {self.quete['nom']}**",
-                color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
-            )
-            img = self.quete.get("image_url")
-            if img:
-                embed.add_field(name="💬 Rébus", value="Observe bien ce symbole...", inline=False)
-                embed.set_image(url=img)
-            else:
-                embed.add_field(name="💬 Énoncé", value=self.quete["enonce"], inline=False)
-            embed.add_field(name="👉 Objectif", value="Trouve la réponse et réponds-moi ici.", inline=False)
-            embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
-else:
-    titre_embed = f"{EMOJI_PAR_CATEGORIE.get(self.categorie, '📜')} {self.categorie}"
-    embed = discord.Embed(
-        title=titre_embed,
-        description=f"**{self.quete['id']} – {self.quete['nom']}**",
-        color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
-    )
-
-    if self.quete.get("type") == "multi_step":
-        steps = self.quete.get("steps", [])
-        step1 = steps[0] if steps else {}
-        # 💬 description courte
-        if self.quete.get("description"):
-            embed.add_field(name="💬 Description", value=self.quete["description"], inline=False)
-
-        # 🧭 Étape actuelle uniquement
-        lignes = []
-        # Lieu (channel / channel_id)
-        ch_nom = step1.get("channel")
-        ch_id = step1.get("channel_id")
-        if ch_nom:
-            lignes.append(f"• **Lieu** : `#{ch_nom}`")
-        elif ch_id:
-            lignes.append(f"• **Lieu** : <#{ch_id}>")
-
-        # Action attendue
-        mots = step1.get("mots_cles") or []
-        if mots:
-            lignes.append("• **Action** : écris un message contenant : " + ", ".join(f"`{m}`" for m in mots))
-        if step1.get("emoji"):
-            lignes.append(f"• **Validation** : réagis avec {step1['emoji']} sur le message du PNJ")
-
-        embed.add_field(name="🚶 Étape 1", value="\n".join(lignes) or "Suis les indications du PNJ.", inline=False)
-        embed.add_field(name="🔁 Progression", value="Quête à plusieurs étapes (les prochaines te seront révélées au fur et à mesure).", inline=False)
+    # MP d’instructions
+    if self.categorie == "Quêtes Énigmes":
+        embed = discord.Embed(
+            title="🧩 Quête Énigmes",
+            description=f"**{self.quete['id']} – {self.quete['nom']}**",
+            color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
+        )
+        img = self.quete.get("image_url")
+        if img:
+            embed.add_field(name="💬 Rébus", value="Observe bien ce symbole...", inline=False)
+            embed.set_image(url=img)
+        else:
+            embed.add_field(name="💬 Énoncé", value=self.quete["enonce"], inline=False)
+        embed.add_field(name="👉 Objectif", value="Trouve la réponse et réponds-moi ici.", inline=False)
+        embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
     else:
-        embed.add_field(name="💬 Description", value=self.quete["description"], inline=False)
-        embed.add_field(name="👉 Objectif", value=self.quete["details_mp"], inline=False)
+        titre_embed = f"{EMOJI_PAR_CATEGORIE.get(self.categorie, '📜')} {self.categorie}"
+        embed = discord.Embed(
+            title=titre_embed,
+            description=f"**{self.quete['id']} – {self.quete['nom']}**",
+            color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
+        )
 
-    embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
+        if self.quete.get("type") == "multi_step":
+            steps = self.quete.get("steps", [])
+            step1 = steps[0] if steps else {}
 
+            # 💬 Description générale (optionnelle)
+            if self.quete.get("description"):
+                embed.add_field(name="💬 Description", value=self.quete["description"], inline=False)
 
-        try:
-            await interaction.user.send(embed=embed)
-            await interaction.response.send_message(
-                "Quête acceptée ✅ Regarde tes MP ! (`!mes_quetes` pour le suivi)",
-                ephemeral=True
+            # 🧭 Étape actuelle uniquement (pas de spoil)
+            lignes = []
+            ch_nom = step1.get("channel")
+            ch_id = step1.get("channel_id")
+            if ch_nom:
+                lignes.append(f"• **Lieu** : `#{ch_nom}`")
+            elif ch_id:
+                lignes.append(f"• **Lieu** : <#{ch_id}>")
+
+            mots = step1.get("mots_cles") or []
+            if mots:
+                lignes.append("• **Action** : écris un message contenant : " + ", ".join(f"`{m}`" for m in mots))
+            if step1.get("emoji"):
+                lignes.append(f"• **Validation** : réagis avec {step1['emoji']} sur le message du PNJ")
+
+            embed.add_field(
+                name="🚶 Étape 1",
+                value="\n".join(lignes) or "Suis les indications du PNJ.",
+                inline=False
             )
-        except discord.Forbidden:
-            await interaction.response.send_message("Je n'arrive pas à t'envoyer de MP 😅", ephemeral=True)
+            embed.add_field(
+                name="🔁 Progression",
+                value="Quête à plusieurs étapes (les suivantes te seront révélées au fur et à mesure).",
+                inline=False
+            )
+        else:
+            # Cas interaction simple (une seule étape)
+            embed.add_field(name="💬 Description", value=self.quete["description"], inline=False)
+            embed.add_field(name="👉 Objectif", value=self.quete["details_mp"], inline=False)
+
+        embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
+
+    try:
+        await interaction.user.send(embed=embed)
+        await interaction.response.send_message(
+            "Quête acceptée ✅ Regarde tes MP ! (`!mes_quetes` pour le suivi)",
+            ephemeral=True
+        )
+    except discord.Forbidden:
+        await interaction.response.send_message("Je n'arrive pas à t'envoyer de MP 😅", ephemeral=True)
 
 # ======================
 #  POSTERS
