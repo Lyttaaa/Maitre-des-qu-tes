@@ -43,7 +43,7 @@
       "Encore une mission pain-complie, merci {user} !",
       "Les miches sont en route grâce à toi ! Tu mérites une croûte dorée 🍞"
       ],
-      "channel": "grand-place"],
+      "channel": "grand-place",
       "reponse_attendue": null,
       "recompense": 6
     },
