@@ -549,6 +549,74 @@ async def show_quete(ctx, quest_id: str = None):
     await ctx.send(embed=embed, allowed_mentions=NO_MENTIONS)
 
 # ======================
+#  COMMANDES : RESET QUETE
+# ======================
+from typing import Optional
+
+@bot.command(name="reset_quete")
+async def reset_quete(ctx, quest_id: str, membre: Optional[discord.Member] = None):
+    """
+    Réinitialise complètement une quête pour un joueur :
+    - retire la quête des listes 'acceptées' et 'terminées'
+    - efface l'état d'interaction actif côté PNJ si présent
+    Usage:
+      !reset_quete QI014
+      !reset_quete QI014 @membre   (admin uniquement pour cibler quelqu'un d'autre)
+    """
+    quest_id = (quest_id or "").upper().strip()
+    if not quest_id:
+        await ctx.reply("Indique un ID de quête, ex: `!reset_quete QI014`", allowed_mentions=NO_MENTIONS)
+        return
+
+    # Vérifier que la quête existe (évite une faute de frappe)
+    quete = charger_quete_par_id(quest_id)
+    if not quete:
+        await ctx.reply(f"Je ne trouve pas la quête `{quest_id}`.", allowed_mentions=NO_MENTIONS)
+        return
+
+    # Cible : soi-même par défaut, ou un membre mentionné (admin requis)
+    target = membre or ctx.author
+    if membre and not ctx.author.guild_permissions.administrator:
+        await ctx.reply("Tu dois être administrateur pour réinitialiser la quête d’un autre membre.", allowed_mentions=NO_MENTIONS)
+        return
+
+    uid = str(target.id)
+
+    # 1) Retirer des quêtes ACCEPTÉES et TERMINÉES
+    res_accept = accepted_collection.update_one(
+        {"_id": uid},
+        {"$pull": {"quetes": {"id": quest_id}}}
+    )
+    res_done = completed_collection.update_one(
+        {"_id": uid},
+        {"$pull": {"quetes": {"id": quest_id}}}
+    )
+
+    # 2) Effacer l'état d'interaction actif côté PNJ si c'était cette quête
+    # NB: ne touche pas aux autres quêtes potentiellement actives (au cas où)
+    user_state.update_one(
+        {"_id": uid, "active_interaction.quest_id": quest_id},
+        {"$unset": {"active_interaction": ""}}
+    )
+
+    # Petit récap
+    changed = (res_accept.modified_count > 0) or (res_done.modified_count > 0)
+    cible_txt = f"**{target.display_name}**"
+    if changed:
+        await ctx.reply(
+            f"🔄 Quête `{quest_id}` réinitialisée pour {cible_txt}.\n"
+            f"• Retirée des quêtes acceptées/terminées\n"
+            f"• État d’interaction PNJ nettoyé (le cas échéant)",
+            allowed_mentions=NO_MENTIONS
+        )
+    else:
+        await ctx.reply(
+            f"ℹ️ Rien à réinitialiser pour `{quest_id}` chez {cible_txt} "
+            f"(elle n’était ni acceptée ni terminée). L’état PNJ correspondant a tout de même été nettoyé.",
+            allowed_mentions=NO_MENTIONS
+        )
+
+# ======================
 #  COMMANDES JOUEURS
 # ======================
 
