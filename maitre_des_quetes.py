@@ -154,6 +154,11 @@ async def envoyer_quete(channel, quete, categorie):
     couleur = COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
     titre = f"{emoji} {categorie}\n– {quete['id']} {quete['nom']}"
     embed = discord.Embed(title=titre, description=quete.get("resume",""), color=couleur)
+
+    # ✅ mention discrète si multi-étapes
+    if quete.get("type") == "multi_step":
+        embed.add_field(name="🔁 Progression", value="Quête à plusieurs étapes", inline=False)
+
     type_texte = f"{categorie} – {quete.get('recompense',0)} Lumes"
     embed.add_field(name="📌 Type & Récompense", value=type_texte, inline=False)
     embed.set_footer(text="Clique sur le bouton ci-dessous pour accepter la quête.")
@@ -258,16 +263,46 @@ class VueAcceptation(View):
                 embed.add_field(name="💬 Énoncé", value=self.quete["enonce"], inline=False)
             embed.add_field(name="👉 Objectif", value="Trouve la réponse et réponds-moi ici.", inline=False)
             embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
-        else:
-            titre_embed = f"{EMOJI_PAR_CATEGORIE.get(self.categorie, '📜')} {self.categorie}"
-            embed = discord.Embed(
-                title=titre_embed,
-                description=f"**{self.quete['id']} – {self.quete['nom']}**",
-                color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
-            )
+else:
+    titre_embed = f"{EMOJI_PAR_CATEGORIE.get(self.categorie, '📜')} {self.categorie}"
+    embed = discord.Embed(
+        title=titre_embed,
+        description=f"**{self.quete['id']} – {self.quete['nom']}**",
+        color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
+    )
+
+    if self.quete.get("type") == "multi_step":
+        steps = self.quete.get("steps", [])
+        step1 = steps[0] if steps else {}
+        # 💬 description courte
+        if self.quete.get("description"):
             embed.add_field(name="💬 Description", value=self.quete["description"], inline=False)
-            embed.add_field(name="👉 Objectif", value=self.quete["details_mp"], inline=False)
-            embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
+
+        # 🧭 Étape actuelle uniquement
+        lignes = []
+        # Lieu (channel / channel_id)
+        ch_nom = step1.get("channel")
+        ch_id = step1.get("channel_id")
+        if ch_nom:
+            lignes.append(f"• **Lieu** : `#{ch_nom}`")
+        elif ch_id:
+            lignes.append(f"• **Lieu** : <#{ch_id}>")
+
+        # Action attendue
+        mots = step1.get("mots_cles") or []
+        if mots:
+            lignes.append("• **Action** : écris un message contenant : " + ", ".join(f"`{m}`" for m in mots))
+        if step1.get("emoji"):
+            lignes.append(f"• **Validation** : réagis avec {step1['emoji']} sur le message du PNJ")
+
+        embed.add_field(name="🚶 Étape 1", value="\n".join(lignes) or "Suis les indications du PNJ.", inline=False)
+        embed.add_field(name="🔁 Progression", value="Quête à plusieurs étapes (les prochaines te seront révélées au fur et à mesure).", inline=False)
+    else:
+        embed.add_field(name="💬 Description", value=self.quete["description"], inline=False)
+        embed.add_field(name="👉 Objectif", value=self.quete["details_mp"], inline=False)
+
+    embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
+
 
         try:
             await interaction.user.send(embed=embed)
