@@ -8,6 +8,8 @@ import discord
 from discord.ext import commands
 from discord.ui import View
 
+from typing import Any, Dict, Optional
+
 # --- MongoDB (safe & required) ---
 try:
     from pymongo import MongoClient
@@ -576,43 +578,9 @@ async def show_quete(ctx, quest_id: str = None):
         return
 
     categorie = categorie_par_id(quest_id)
-
-    if categorie == "Quêtes Énigmes":
-        embed = discord.Embed(
-            title="🧩 Quête Énigmes (APERÇU)",
-            description=f"**{quete['id']} – {quete['nom']}**",
-            color=COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
-        )
-        img = quete.get("image_url")
-        if img:
-            embed.add_field(name="💬 Rébus", value="Observe bien ce symbole...", inline=False)
-            embed.set_image(url=img)
-        else:
-            embed.add_field(name="💬 Énoncé", value=quete["enonce"], inline=False)
-        embed.add_field(name="👉 Objectif", value="Trouve la réponse et réponds-moi ici.", inline=False)
-        embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
-
-    elif categorie == "Quêtes Recherches":
-        embed = discord.Embed(
-            title=f"🔎 {categorie} (APERÇU)",
-            description=f"**{quete['id']} – {quete['nom']}**",
-            color=COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
-        )
-        embed.add_field(name="💬 Indice", value=quete["description"], inline=False)
-        embed.add_field(name="👉 Objectif", value=quete["details_mp"], inline=False)
-        embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
-
-    else:  # Interactions
-        embed = discord.Embed(
-            title=f"🤝 {categorie} (APERÇU)",
-            description=f"**{quete['id']} – {quete['nom']}**",
-            color=COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
-        )
-        embed.add_field(name="💬 Description", value=quete["description"], inline=False)
-        embed.add_field(name="👉 Objectif", value=quete["details_mp"], inline=False)
-        embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
-
-    await ctx.send(embed=embed, allowed_mentions=NO_MENTIONS)
+    # ✅ On délègue le rendu à la même fonction que le tableau / tester_quete
+    await envoyer_quete(ctx.channel, quete, categorie)
+    await ctx.message.add_reaction("✅")
 
 # ======================
 #  COMMANDES : RESET QUETE
