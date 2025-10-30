@@ -289,35 +289,98 @@ async def purger_messages_categorie(channel: discord.TextChannel, categorie: str
                 except:
                     pass
 
-async def envoyer_quete(channel, quete, categorie):
-    emoji = EMOJI_PAR_CATEGORIE.get(categorie, "❓")
-    couleur = COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
-    titre = f"{emoji} {categorie}\n– {quete['id']} {quete['nom']}"
-    embed = discord.Embed(title=titre, description=quete.get("resume",""), color=couleur)
+# -- Remplacer entièrement cette fonction --
+async def envoyer_quete(channel: discord.abc.Messageable, quete: Dict[str, Any], categorie: str):
+    """
+    Envoie l'embed "public" d'une quête dans un channel (tableau / show / test)
+    et ajoute la VueAcceptation.
+    Gère correctement les quêtes à plusieurs étapes (type=multi_step).
+    """
+    titre_embed = f"{EMOJI_PAR_CATEGORIE.get(categorie, '📜')} {categorie}"
+    embed = discord.Embed(
+        title=titre_embed,
+        description=f"**{quete['id']} – {quete['nom']}**",
+        color=COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
+    )
 
-    # ✅ mention discrète si multi-étapes
-    if quete.get("type") == "multi_step":
-        embed.add_field(name="🔁 Progression", value="Quête à plusieurs étapes", inline=False)
+    # --- INTERACTIONS ---
+    if categorie == "Quêtes Interactions":
+        qtype = (quete.get("type") or "interaction").strip()
 
-    type_texte = f"{categorie} – {quete.get('recompense',0)} Lumes"
-    embed.add_field(name="📌 Type & Récompense", value=type_texte, inline=False)
-    embed.set_footer(text="Clique sur le bouton ci-dessous pour accepter la quête.")
+        if qtype == "multi_step":
+            # Étape 1 uniquement (pas de spoil)
+            steps = quete.get("steps") or []
+            step1 = steps[0] if steps else {}
+
+            # Description courte si dispo
+            if quete.get("description"):
+                embed.add_field(name="💬 Description", value=quete["description"], inline=False)
+
+            lignes = []
+
+            # Lieu (par nom de channel ou ID)
+            ch_nom = step1.get("channel")
+            ch_id = step1.get("channel_id")
+            if ch_nom:
+                lignes.append(f"• **Lieu** : `#{ch_nom}`")
+            elif ch_id:
+                lignes.append(f"• **Lieu** : <#{ch_id}>")
+
+            # Mots-clés attendus
+            mots = step1.get("mots_cles") or []
+            if mots:
+                lignes.append("• **Action** : écris un message contenant : " + ", ".join(f"`{m}`" for m in mots))
+
+            # Réaction attendue (si cette étape en a une)
+            if step1.get("emoji"):
+                lignes.append(f"• **Validation** : réagis avec {step1['emoji']} sur le message du PNJ")
+
+            # Réplique PNJ éventuelle (indicative)
+            if step1.get("replique_pnj"):
+                lignes.append(f"• **Indice PNJ** : {step1['replique_pnj']}")
+
+            embed.add_field(
+                name="🚶 Étape 1",
+                value="\n".join(lignes) or "Suis les indications du PNJ.",
+                inline=False
+            )
+            embed.add_field(
+                name="🔁 Progression",
+                value="Quête à **plusieurs étapes** (les suivantes seront révélées au fur et à mesure).",
+                inline=False
+            )
+
+        else:
+            # Interaction simple (ancienne forme)
+            desc = quete.get("description") or "—"
+            embed.add_field(name="💬 Description", value=desc, inline=False)
+
+            objectif = quete.get("details_mp") or "—"
+            embed.add_field(name="👉 Objectif", value=objectif, inline=False)
+
+    # --- RECHERCHES ---
+    elif categorie == "Quêtes Recherches":
+        embed.add_field(name="💬 Description", value=quete.get("description") or "—", inline=False)
+        embed.add_field(name="👉 Objectif", value=quete.get("details_mp") or "—", inline=False)
+
+    # --- ÉNIGMES (public : montre l’énoncé texte, pas les rébus d’images) ---
+    elif categorie == "Quêtes Énigmes":
+        if quete.get("enonce"):
+            embed.add_field(name="💬 Énoncé", value=quete["enonce"], inline=False)
+        else:
+            # Si c'est un rébus image, on garde un texte neutre côté public
+            embed.add_field(name="💬 Énigme", value="Énigme visuelle – accepte la quête pour voir l’image en MP.", inline=False)
+
+    # --- JOURNALIÈRES ---
+    else:  # "Quêtes Journalières"
+        embed.add_field(name="💬 Description", value=quete.get("description") or "—", inline=False)
+        embed.add_field(name="👉 Objectif", value=quete.get("details_mp") or "—", inline=False)
+
+    embed.set_footer(text=f"🏅 Récompense : {quete.get('recompense', 0)} Lumes")
+
+    # Vue d’acceptation (bouton)
     await channel.send(embed=embed, view=VueAcceptation(quete, categorie))
 
-def get_quete_non_postee(categorie, quetes_possibles):
-    doc = rotation_collection.find_one({"_id": categorie})
-    deja_postees = doc["postees"] if doc else []
-    restantes = [q for q in quetes_possibles if q["id"] not in deja_postees]
-    if not restantes:
-        restantes = quetes_possibles
-        deja_postees = []
-    quete = choice(restantes)
-    rotation_collection.update_one(
-        {"_id": categorie},
-        {"$set": {"postees": deja_postees + [quete["id"]]}},
-        upsert=True
-    )
-    return quete
 # ======================
 #  POSTERS
 # ======================
