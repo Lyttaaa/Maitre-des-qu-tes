@@ -408,6 +408,80 @@ async def show_quete(ctx, quest_id: str = None):
     await ctx.send(embed=embed, allowed_mentions=NO_MENTIONS)
 
 # ======================
+#  COMMANDES JOUEURS
+# ======================
+
+@bot.command()
+async def mes_quetes(ctx):
+    """Affiche les quêtes en cours et terminées de l'utilisateur."""
+    user_id = str(ctx.author.id)
+    charger_toutes_les_quetes()
+    toutes_quetes = [q for lst in QUETES_RAW.values() if isinstance(lst, list) for q in lst]
+
+    user_accept = accepted_collection.find_one({"_id": user_id}) or {}
+    user_done = completed_collection.find_one({"_id": user_id}) or {}
+
+    quetes_accept = user_accept.get("quetes", [])
+    quetes_done = user_done.get("quetes", [])
+
+    ids_accept = set(q["id"] if isinstance(q, dict) else q for q in quetes_accept)
+    ids_done = set(q.get("id") if isinstance(q, dict) else q for q in quetes_done)
+
+    categories = {
+        "Quêtes Journalières": {"emoji": "🕘", "encours": [], "terminees": []},
+        "Quêtes Interactions": {"emoji": "🕹️", "encours": [], "terminees": []},
+        "Quêtes Recherches": {"emoji": "🔍", "encours": [], "terminees": []},
+        "Quêtes Énigmes": {"emoji": "🧩", "encours": [], "terminees": []},
+    }
+
+    for quete in toutes_quetes:
+        cat = CATEGORIE_PAR_ID.get(quete.get("id"), "Autres")
+        if cat not in categories:
+            continue
+        ligne = f"• {quete['id']} – {quete['nom']}"
+        if quete["id"] in ids_done:
+            categories[cat]["terminees"].append(ligne)
+        elif quete["id"] in ids_accept:
+            categories[cat]["encours"].append(ligne)
+
+    embed = discord.Embed(
+        title=f"📘 Quêtes de {ctx.author.display_name}",
+        color=0xA86E2A
+    )
+
+    desc = "📜 **Quêtes en cours**\n"
+    for cat, data in categories.items():
+        desc += f"{data['emoji']} __{cat.replace('Quêtes ', '')} :__\n"
+        desc += "\n".join(data["encours"]) + "\n" if data["encours"] else "*Aucune*\n"
+
+    desc += "\n🏅 **Quêtes terminées**\n"
+    for cat, data in categories.items():
+        desc += f"{data['emoji']} __{cat.replace('Quêtes ', '')} :__\n"
+        desc += "\n".join(data["terminees"]) + "\n" if data["terminees"] else "*Aucune*\n"
+
+    embed.description = desc
+    await ctx.send(embed=embed, allowed_mentions=NO_MENTIONS)
+
+
+@bot.command()
+async def bourse(ctx):
+    """Affiche le nombre de Lumes du joueur."""
+    user_id = str(ctx.author.id)
+    user = utilisateurs.find_one({"_id": user_id})
+    if not user:
+        utilisateurs.insert_one({
+            "_id": user_id,
+            "pseudo": ctx.author.name,
+            "lumes": 0,
+            "derniere_offrande": {},
+            "roles_temporaires": {},
+        })
+        user = utilisateurs.find_one({"_id": user_id}) or {}
+
+    await ctx.send(f"💰 {ctx.author.mention}, tu possèdes **{user.get('lumes', 0)} Lumes**.", allowed_mentions=NO_MENTIONS)
+
+
+# ======================
 #  EVENTS: COMPLETION
 # ======================
 @bot.event
