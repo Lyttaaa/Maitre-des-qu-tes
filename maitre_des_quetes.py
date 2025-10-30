@@ -18,7 +18,7 @@ import json
 import os
 
 # Chemin vers ton JSON (adapte si besoin)
-CHEMIN_QUETES = os.getenv("QUETES_JSON_PATH", "quetes.json")
+CHEMIN_QUETES = os.getenv("CHEMIN_QUETES", "quetes.json")
 
 # Cache global
 QUETES_RAW = None
@@ -89,27 +89,25 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 QUESTS_CHANNEL_ID = int(os.getenv("QUESTS_CHANNEL_ID", "0"))
 ANNOUNCE_CHANNEL_ID = int(os.getenv("ANNOUNCE_CHANNEL_ID", "0"))  # optionnel
 
-# --- MongoDB (safe with PyMongo) ---
-import os
+# --- MongoDB (safe) ---
+import os, json
 try:
     from pymongo import MongoClient
 except ImportError:
     MongoClient = None
 
 MONGO_URI = os.getenv("MONGO_URI")
-
-if MongoClient is None or not MONGO_URI:
+if not (MongoClient and MONGO_URI):
     raise RuntimeError("MONGO_URI (et pymongo) sont requis pour le Maître des Quêtes.")
 
-mongo_client = MongoClient(MONGO_URI)
-db = mongo_client.get_database("lumharel_bot")  # nom utilisé côté PNJ aussi
+client = MongoClient(MONGO_URI)
+db = client.get_database("lumharel_bot")  # même DB que le PNJ
 
-# ⚠️ Ne JAMAIS faire `if db:` avec PyMongo ; utiliser `is not None`
-accepted_collection   = db.quetes_acceptees
-completed_collection  = db.quetes_terminees
-utilisateurs          = db.utilisateurs
-rotation_collection   = db.rotation_quetes
-user_state            = db.user_state  # <-- nécessaire pour stocker active_interaction
+accepted_collection  = db.quetes_acceptees
+completed_collection = db.quetes_terminees
+utilisateurs         = db.utilisateurs
+rotation_collection  = db.rotation_quetes
+user_state           = db.user_state  # 👈 nécessaire pour 'active_interaction'
 
 TZ_PARIS = pytz.timezone("Europe/Paris")
 
@@ -150,11 +148,12 @@ def normaliser(texte):
 def charger_quetes():
     with open(CHEMIN_QUETES, "r", encoding="utf-8") as f:
         data = json.load(f)
-    for categorie, quetes in data.items():
-        for quete in quetes:
-            quete["categorie"] = categorie
+    # injecte la catégorie dans chaque quete (utile pour l'embed)
+    for categorie, lst in data.items():
+        if isinstance(lst, list):
+            for q in lst:
+                q["categorie"] = categorie
     return data
-
 
 async def purger_messages_categorie(channel: discord.TextChannel, categorie: str, limit=100):
     """
