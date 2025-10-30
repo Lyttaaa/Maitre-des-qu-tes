@@ -7,72 +7,16 @@ from random import choice
 import discord
 from discord.ext import commands
 from discord.ui import View
-from pymongo import MongoClient
+
+# --- MongoDB (safe & required) ---
+try:
+    from pymongo import MongoClient
+except ImportError:
+    MongoClient = None
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 import pytz
-
-# --- Loader quetes + index par ID ------------------------------------------
-import json
-import os
-
-# Chemin vers ton JSON (adapte si besoin)
-CHEMIN_QUETES = os.getenv("CHEMIN_QUETES", "quetes.json")
-
-# Cache global
-QUETES_RAW = None
-QUETES_INDEX = {}   # {"QE012": {"id": "...", ...}, ...}
-CATEGORIE_PAR_ID = {}  # {"QE012": "Quêtes Énigmes", ...}
-
-def charger_toutes_les_quetes():
-    global QUETES_RAW, QUETES_INDEX, CATEGORIE_PAR_ID
-    if QUETES_RAW is not None:
-        return  # déjà chargé
-
-    with open(CHEMIN_QUETES, "r", encoding="utf-8") as f:
-        QUETES_RAW = json.load(f)
-
-    QUETES_INDEX.clear()
-    CATEGORIE_PAR_ID.clear()
-
-    # Liste des catégories possibles selon ta structure
-    categories_possibles = [
-        "Quêtes Interactions",
-        "Quêtes Recherches",
-        "Quêtes Énigmes",
-        # si tu as aussi les "(AJOUTS)" dans un autre fichier/canvas, ajoute-les ici :
-        "Quêtes Interactions (AJOUTS)",
-        "Quêtes Recherches (AJOUTS)",
-        "Quêtes Énigmes (AJOUTS)",
-    ]
-
-    for cat in categories_possibles:
-        if cat not in QUETES_RAW:
-            continue
-        for q in QUETES_RAW[cat]:
-            qid = q.get("id", "").upper()
-            if not qid:
-                continue
-            QUETES_INDEX[qid] = q
-            # si tes ajouts portent la même nature, on “normalize” la catégorie
-            if "Interaction" in cat:
-                CATEGORIE_PAR_ID[qid] = "Quêtes Interactions"
-            elif "Recherche" in cat:
-                CATEGORIE_PAR_ID[qid] = "Quêtes Recherches"
-            elif "Énigme" in cat or "Enigme" in cat:
-                CATEGORIE_PAR_ID[qid] = "Quêtes Énigmes"
-            else:
-                CATEGORIE_PAR_ID[qid] = cat
-
-def charger_quete_par_id(quest_id: str):
-    """Retourne l'objet quête (dict) pour un ID donné, sinon None."""
-    charger_toutes_les_quetes()
-    return QUETES_INDEX.get(quest_id.upper())
-
-def categorie_par_id(quest_id: str) -> str:
-    charger_toutes_les_quetes()
-    return CATEGORIE_PAR_ID.get(quest_id.upper(), "Quête")
 
 # ======================
 #  CONFIG DISCORD & DB
@@ -84,30 +28,23 @@ intents.reactions = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+CHEMIN_QUETES = os.getenv("CHEMIN_QUETES", "quetes.json")
 MONGO_URI = os.getenv("MONGO_URI")
-DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")  # token du Maître des Quêtes
 QUESTS_CHANNEL_ID = int(os.getenv("QUESTS_CHANNEL_ID", "0"))
 ANNOUNCE_CHANNEL_ID = int(os.getenv("ANNOUNCE_CHANNEL_ID", "0"))  # optionnel
 
-# --- MongoDB (safe) ---
-import os, json
-try:
-    from pymongo import MongoClient
-except ImportError:
-    MongoClient = None
-
-MONGO_URI = os.getenv("MONGO_URI")
 if not (MongoClient and MONGO_URI):
-    raise RuntimeError("MONGO_URI (et pymongo) sont requis pour le Maître des Quêtes.")
+    raise RuntimeError("MONGO_URI + pymongo requis pour le Maître des Quêtes.")
 
 client = MongoClient(MONGO_URI)
-db = client.get_database("lumharel_bot")  # même DB que le PNJ
+db = client.get_database("lumharel_bot")
 
 accepted_collection  = db.quetes_acceptees
 completed_collection = db.quetes_terminees
 utilisateurs         = db.utilisateurs
 rotation_collection  = db.rotation_quetes
-user_state           = db.user_state  # 👈 nécessaire pour 'active_interaction'
+user_state           = db.user_state   # état 'active_interaction' lu par le bot PNJ
 
 TZ_PARIS = pytz.timezone("Europe/Paris")
 
@@ -117,22 +54,78 @@ TZ_PARIS = pytz.timezone("Europe/Paris")
 EMOJI_PAR_CATEGORIE = {
     "Quêtes Journalières": "🕘",
     "Quêtes Interactions": "🕹️",
-    "Quêtes Recherches": "🔍",
-    "Quêtes Énigmes": "🧩",
+    "Quêtes Recherches":   "🔍",
+    "Quêtes Énigmes":      "🧩",
 }
 COULEURS_PAR_CATEGORIE = {
     "Quêtes Journalières": 0x4CAF50,
     "Quêtes Interactions": 0x2196F3,
-    "Quêtes Recherches": 0x9C27B0,
-    "Quêtes Énigmes": 0xFFC107,
+    "Quêtes Recherches":   0x9C27B0,
+    "Quêtes Énigmes":      0xFFC107,
 }
+
+NO_MENTIONS = discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=False)
+
+# ======================
+#  LOADER QUÊTES
+# ======================
+QUETES_RAW = None
+QUETES_INDEX = {}      # {"QE012": {quete}}
+CATEGORIE_PAR_ID = {}  # {"QE012": "Quêtes Énigmes"}
+
+def _normalize_cat_name(cat: str) -> str:
+    if "Interaction" in cat: return "Quêtes Interactions"
+    if "Recherche"  in cat: return "Quêtes Recherches"
+    if "Énigme" in cat or "Enigme" in cat: return "Quêtes Énigmes"
+    if "Journalière" in cat or "Journaliere" in cat: return "Quêtes Journalières"
+    return cat
+
+def charger_toutes_les_quetes():
+    """Charge le JSON une seule fois, crée index & catégories par ID."""
+    global QUETES_RAW, QUETES_INDEX, CATEGORIE_PAR_ID
+    if QUETES_RAW is not None:
+        return
+
+    with open(CHEMIN_QUETES, "r", encoding="utf-8") as f:
+        QUETES_RAW = json.load(f)
+
+    QUETES_INDEX.clear()
+    CATEGORIE_PAR_ID.clear()
+
+    for cat, lst in QUETES_RAW.items():
+        if not isinstance(lst, list):
+            continue
+        cat_norm = _normalize_cat_name(cat)
+        for q in lst:
+            qid = (q.get("id") or "").upper()
+            if not qid:
+                continue
+            QUETES_INDEX[qid] = q
+            CATEGORIE_PAR_ID[qid] = cat_norm
+
+def charger_quete_par_id(quest_id: str):
+    charger_toutes_les_quetes()
+    return QUETES_INDEX.get((quest_id or "").upper())
+
+def categorie_par_id(quest_id: str) -> str:
+    charger_toutes_les_quetes()
+    return CATEGORIE_PAR_ID.get((quest_id or "").upper(), "Quête")
+
+def charger_quetes_groupes():
+    """Retourne un dict {cat_norm: [quetes]} et injecte la clé 'categorie' dans chaque quete."""
+    charger_toutes_les_quetes()
+    groupes = {"Quêtes Journalières": [], "Quêtes Interactions": [], "Quêtes Recherches": [], "Quêtes Énigmes": []}
+    for qid, q in QUETES_INDEX.items():
+        cat = CATEGORIE_PAR_ID.get(qid, "Quête")
+        q = dict(q)  # copie légère pour injection non destructive
+        q["categorie"] = cat
+        if cat in groupes:
+            groupes[cat].append(q)
+    return groupes
 
 # ======================
 #  UTILS
 # ======================
-def ids_quetes(liste):
-    return [q["id"] if isinstance(q, dict) else q for q in liste]
-
 def normaliser(texte):
     if not isinstance(texte, str):
         return ""
@@ -145,21 +138,7 @@ def normaliser(texte):
     texte = texte.replace("\u200b", "")
     return texte
 
-def charger_quetes():
-    with open(CHEMIN_QUETES, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    # injecte la catégorie dans chaque quete (utile pour l'embed)
-    for categorie, lst in data.items():
-        if isinstance(lst, list):
-            for q in lst:
-                q["categorie"] = categorie
-    return data
-
 async def purger_messages_categorie(channel: discord.TextChannel, categorie: str, limit=100):
-    """
-    Supprime uniquement les anciens messages du bot qui contiennent un embed
-    dont le titre commence par l’emoji de la catégorie.
-    """
     prefix = EMOJI_PAR_CATEGORIE.get(categorie, "")
     async for message in channel.history(limit=limit):
         if message.author == bot.user and message.embeds:
@@ -174,9 +153,8 @@ async def envoyer_quete(channel, quete, categorie):
     emoji = EMOJI_PAR_CATEGORIE.get(categorie, "❓")
     couleur = COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
     titre = f"{emoji} {categorie}\n– {quete['id']} {quete['nom']}"
-
-    embed = discord.Embed(title=titre, description=quete["resume"], color=couleur)
-    type_texte = f"{categorie} – {quete['recompense']} Lumes"
+    embed = discord.Embed(title=titre, description=quete.get("resume",""), color=couleur)
+    type_texte = f"{categorie} – {quete.get('recompense',0)} Lumes"
     embed.add_field(name="📌 Type & Récompense", value=type_texte, inline=False)
     embed.set_footer(text="Clique sur le bouton ci-dessous pour accepter la quête.")
     await channel.send(embed=embed, view=VueAcceptation(quete, categorie))
@@ -236,6 +214,7 @@ class VueAcceptation(View):
                 )
             return
 
+        # Enregistrer l'acceptation
         accepted_collection.update_one(
             {"_id": user_id},
             {"$addToSet": {
@@ -247,29 +226,13 @@ class VueAcceptation(View):
             }, "$set": {"pseudo": interaction.user.name}},
             upsert=True
         )
-        if self.categorie == "Quêtes Interactions":
-            etat = {
-                "quest_id": self.quete["id"],
-                "type": self.quete.get("type", "interaction"),  # "multi_step" ou "interaction"
-                "pnj": (self.quete.get("pnj") or "").strip(),
-                "current_step": 1 if self.quete.get("type") == "multi_step" else None,
-               "awaiting_reaction": False,
-              "emoji": None
-            }
-            user_state.update_one(
-                {"_id": str(interaction.user.id)},
-                {"$set": {"active_interaction": etat}},
-                upsert=True
-            )
 
-    
-        # ➕ ICI : on ajoute la création d’un état actif pour les quêtes d’interaction
+        # ➕ État actif (utilisé par le bot PNJ) — UNE SEULE FOIS
         if self.categorie == "Quêtes Interactions":
             etat = {
                 "quest_id": self.quete["id"],
                 "type": self.quete.get("type", "interaction"),  # "multi_step" ou "interaction"
                 "pnj": (self.quete.get("pnj") or "").strip(),
-                # progression multi-étapes
                 "current_step": 1 if self.quete.get("type") == "multi_step" else None,
                 "awaiting_reaction": False,
                 "emoji": None
@@ -277,9 +240,9 @@ class VueAcceptation(View):
             user_state.update_one(
                 {"_id": str(interaction.user.id)},
                 {"$set": {"active_interaction": etat}},
-                 upsert=True
+                upsert=True
             )
-            
+
         # MP d’instructions
         if self.categorie == "Quêtes Énigmes":
             embed = discord.Embed(
@@ -287,17 +250,12 @@ class VueAcceptation(View):
                 description=f"**{self.quete['id']} – {self.quete['nom']}**",
                 color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
             )
-
             img = self.quete.get("image_url")
-
             if img:
-                # Si un rébus visuel existe, on ne montre pas l’énoncé texte
                 embed.add_field(name="💬 Rébus", value="Observe bien ce symbole...", inline=False)
                 embed.set_image(url=img)
             else:
-                # Sinon on affiche le texte d’énigme classique
                 embed.add_field(name="💬 Énoncé", value=self.quete["enonce"], inline=False)
-
             embed.add_field(name="👉 Objectif", value="Trouve la réponse et réponds-moi ici.", inline=False)
             embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
         else:
@@ -324,42 +282,40 @@ class VueAcceptation(View):
 #  POSTERS
 # ======================
 async def poster_journalieres():
-    """Poste seulement les 2 quêtes journalières (tous les jours)."""
-    quetes_par_type = charger_quetes()
+    groupes = charger_quetes_groupes()
     channel = bot.get_channel(QUESTS_CHANNEL_ID)
     if not channel:
         print("❌ Channel quêtes introuvable.")
         return
 
     await purger_messages_categorie(channel, "Quêtes Journalières", limit=100)
-    for quete in quetes_par_type.get("Quêtes Journalières", [])[:2]:
+    for quete in groupes.get("Quêtes Journalières", [])[:2]:
         await envoyer_quete(channel, quete, "Quêtes Journalières")
     print("✅ Journalières postées.")
 
 async def poster_hebdo():
-    """Poste 1 interaction + 1 recherche + 1 énigme avec rotation (chaque semaine)."""
-    quetes_par_type = charger_quetes()
+    groupes = charger_quetes_groupes()
     channel = bot.get_channel(QUESTS_CHANNEL_ID)
     if not channel:
         print("❌ Channel quêtes introuvable.")
         return
 
     # Interactions
-    interactions = quetes_par_type.get("Quêtes Interactions", [])
+    interactions = groupes.get("Quêtes Interactions", [])
     if interactions:
         await purger_messages_categorie(channel, "Quêtes Interactions", limit=100)
         q = get_quete_non_postee("Quêtes Interactions", interactions)
         await envoyer_quete(channel, q, "Quêtes Interactions")
 
     # Recherches
-    recherches = quetes_par_type.get("Quêtes Recherches", [])
+    recherches = groupes.get("Quêtes Recherches", [])
     if recherches:
         await purger_messages_categorie(channel, "Quêtes Recherches", limit=100)
         q = get_quete_non_postee("Quêtes Recherches", recherches)
         await envoyer_quete(channel, q, "Quêtes Recherches")
 
     # Énigmes
-    enigmes = quetes_par_type.get("Quêtes Énigmes", [])
+    enigmes = groupes.get("Quêtes Énigmes", [])
     if enigmes:
         await purger_messages_categorie(channel, "Quêtes Énigmes", limit=100)
         q = get_quete_non_postee("Quêtes Énigmes", enigmes)
@@ -383,103 +339,30 @@ async def annoncer_mise_a_jour():
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def poster_quetes(ctx):
-    """Poste tout d’un coup (journalières + hebdo) — commande admin."""
     await poster_journalieres()
     await poster_hebdo()
     await annoncer_mise_a_jour()
-    await ctx.reply("✅ Quêtes postées (journalières + hebdo).")
+    await ctx.reply("✅ Quêtes postées (journalières + hebdo).", allowed_mentions=NO_MENTIONS)
 
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def journaliere(ctx):
     await poster_journalieres()
-    await ctx.reply("✅ Journalières postées.")
+    await ctx.reply("✅ Journalières postées.", allowed_mentions=NO_MENTIONS)
 
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def hebdo(ctx):
     await poster_hebdo()
-    await ctx.reply("✅ Hebdomadaires postées.")
-
-@bot.command()
-async def mes_quetes(ctx):
-    user_id = str(ctx.author.id)
-    toutes_quetes = [q for lst in charger_quetes().values() for q in lst]
-
-    user_accept = accepted_collection.find_one({"_id": user_id}) or {}
-    user_done = completed_collection.find_one({"_id": user_id}) or {}
-
-    quetes_accept = user_accept.get("quetes", [])
-    quetes_done = user_done.get("quetes", [])
-
-    ids_accept = set(q["id"] if isinstance(q, dict) else q for q in quetes_accept)
-    ids_done = set(q.get("id") if isinstance(q, dict) else q for q in quetes_done)
-
-    categories = {
-        "Quêtes Journalières": {"emoji": "🕘", "encours": [], "terminees": []},
-        "Quêtes Interactions": {"emoji": "🕹️", "encours": [], "terminees": []},
-        "Quêtes Recherches": {"emoji": "🔍", "encours": [], "terminees": []},
-        "Quêtes Énigmes": {"emoji": "🧩", "encours": [], "terminees": []},
-    }
-
-    for quete in toutes_quetes:
-        cat = quete.get("categorie")
-        if not cat or cat not in categories:
-            continue
-        ligne = f"• {quete['id']} – {quete['nom']}"
-        if quete["id"] in ids_done:
-            categories[cat]["terminees"].append(ligne)
-        elif quete["id"] in ids_accept:
-            categories[cat]["encours"].append(ligne)
-
-    embed = discord.Embed(
-        title=f"📘 Quêtes de {ctx.author.display_name}",
-        color=0xA86E2A
-    )
-    desc = "📜 **Quêtes en cours**\n"
-    for cat, data in categories.items():
-        desc += f"{data['emoji']} __{cat.replace('Quêtes ', '')} :__\n"
-        desc += "\n".join(data["encours"]) + "\n" if data["encours"] else "*Aucune*\n"
-
-    desc += "\n🏅 **Quêtes terminées**\n"
-    for cat, data in categories.items():
-        desc += f"{data['emoji']} __{cat.replace('Quêtes ', '')} :__\n"
-        desc += "\n".join(data["terminees"]) + "\n" if data["terminees"] else "*Aucune*\n"
-
-    embed.description = desc
-    await ctx.send(embed=embed)
-
-@bot.command()
-async def bourse(ctx):
-    user_id = str(ctx.author.id)
-    user = utilisateurs.find_one({"_id": user_id})
-    if not user:
-        utilisateurs.insert_one({
-            "_id": user_id,
-            "pseudo": ctx.author.name,
-            "lumes": 0,
-            "derniere_offrande": {},
-            "roles_temporaires": {},
-        })
-        user = utilisateurs.find_one({"_id": user_id}) or {}
-    await ctx.send(f"💰 {ctx.author.mention}, tu possèdes **{user.get('lumes', 0)} Lumes**.")
-
-import discord
-from discord.ext import commands
-
-NO_MENTIONS = discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=False)
+    await ctx.reply("✅ Hebdomadaires postées.", allowed_mentions=NO_MENTIONS)
 
 @bot.command(name="show_quete")
 async def show_quete(ctx, quest_id: str = None):
-    """
-    Usage: !show_quete QE012   (ou QI019 / QR003)
-    """
-    if quest_id is None:
+    if not quest_id:
         await ctx.send("Usage : `!show_quete <ID>` (ex: `!show_quete QE012`)", allowed_mentions=NO_MENTIONS)
         return
 
     quest_id = quest_id.strip().upper()
-
     quete = charger_quete_par_id(quest_id)
     if not quete:
         await ctx.send(f"Je ne trouve pas la quête `{quest_id}`.", allowed_mentions=NO_MENTIONS)
@@ -487,7 +370,6 @@ async def show_quete(ctx, quest_id: str = None):
 
     categorie = categorie_par_id(quest_id)
 
-    # --- Construction d’embed (même logique que tes DMs) ---
     if categorie == "Quêtes Énigmes":
         embed = discord.Embed(
             title="🧩 Quête Énigmes (APERÇU)",
@@ -500,8 +382,7 @@ async def show_quete(ctx, quest_id: str = None):
             embed.set_image(url=img)
         else:
             embed.add_field(name="💬 Énoncé", value=quete["enonce"], inline=False)
-
-        embed.add_field(name="👉 Objectif", value="Tro uve la réponse et réponds-moi ici.", inline=False)
+        embed.add_field(name="👉 Objectif", value="Trouve la réponse et réponds-moi ici.", inline=False)
         embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
 
     elif categorie == "Quêtes Recherches":
@@ -526,7 +407,6 @@ async def show_quete(ctx, quest_id: str = None):
 
     await ctx.send(embed=embed, allowed_mentions=NO_MENTIONS)
 
-
 # ======================
 #  EVENTS: COMPLETION
 # ======================
@@ -539,18 +419,19 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
     user_id = str(payload.user_id)
     emoji = str(payload.emoji)
 
-    quetes = charger_quetes()
+    groupes = charger_quetes_groupes()
     user_data = accepted_collection.find_one({"_id": user_id})
     if not user_data:
         return
 
     quetes_acceptees = user_data.get("quetes", [])
-    toutes_quetes = [q for lst in quetes.values() for q in lst]
+    toutes_quetes = [q for lst in groupes.values() for q in lst]
 
     for quete in toutes_quetes:
         if quete.get("type") != "reaction":
             continue
-        if quete["id"] not in [q["id"] if isinstance(q, dict) else q for q in quetes_acceptees]:
+        ids_accept = [q["id"] if isinstance(q, dict) else q for q in quetes_acceptees]
+        if quete["id"] not in ids_accept:
             continue
 
         liste_emojis = quete.get("emoji", [])
@@ -558,6 +439,8 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
             liste_emojis = [liste_emojis]
 
         if emoji in liste_emojis:
+            # ✅ clear de l'état *avant* le return
+            user_state.update_one({"_id": user_id}, {"$unset": {"active_interaction": ""}})
             accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": {"id": quete["id"]}}})
             completed_collection.update_one(
                 {"_id": user_id},
@@ -578,31 +461,29 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
                 if ch:
                     await ch.send(f"✅ {user.mention} a terminé **{quete['nom']}** ! (MP non reçu)")
             return
-            # fin de validation → on libère l'interaction
-            user_state.update_one({"_id": str(user_id)}, {"$unset": {"active_interaction": ""}})
-
 
 @bot.event
 async def on_message(message: discord.Message):
     if message.author.bot:
         return
 
-    # Réponse aux énigmes en MP
+    # Réponses aux énigmes en MP
     if isinstance(message.channel, discord.DMChannel):
         user = message.author
         user_id = str(user.id)
         contenu = message.content.strip()
 
-        quetes = charger_quetes()
+        groupes = charger_quetes_groupes()
         user_data = accepted_collection.find_one({"_id": user_id})
         if not user_data:
             return
 
         quetes_acceptees = user_data.get("quetes", [])
-        toutes_quetes = [q for lst in quetes.values() for q in lst]
+        toutes_quetes = [q for lst in groupes.values() for q in lst]
 
         for quete in toutes_quetes:
-            if quete["id"] not in [q["id"] if isinstance(q, dict) else q for q in quetes_acceptees]:
+            ids_accept = [q["id"] if isinstance(q, dict) else q for q in quetes_acceptees]
+            if quete["id"] not in ids_accept:
                 continue
 
             bonne = normaliser(quete.get("reponse_attendue", ""))
@@ -610,8 +491,7 @@ async def on_message(message: discord.Message):
                 accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": {"id": quete["id"]}}})
                 completed_collection.update_one(
                     {"_id": user_id},
-                    {"$addToSet": {"quetes": {"id": quete["id"], "nom": quete["nom"], "categorie": quete["categorie"]}},
-                     "$set": {"pseudo": user.name}},
+                    {"$addToSet": {"quetes": {"id": quete["id"], "nom": quete["nom"], "categorie": quete["categorie"]}}},
                     upsert=True
                 )
                 utilisateurs.update_one(
@@ -639,24 +519,24 @@ async def on_ready():
 
     if _scheduler is None:
         _scheduler = AsyncIOScheduler(timezone=TZ_PARIS)
-        # Tous les jours 10:30 → journalières
         _scheduler.add_job(lambda: bot.loop.create_task(poster_journalieres()),
                            CronTrigger(hour=10, minute=30))
-        # Chaque lundi 10:31 → hebdo (décalé d’1 min pour éviter concurrence)
         _scheduler.add_job(lambda: bot.loop.create_task(poster_hebdo()),
                            CronTrigger(day_of_week='mon', hour=10, minute=31))
-        # Annonce après chaque post hebdo
         if ANNOUNCE_CHANNEL_ID:
             _scheduler.add_job(lambda: bot.loop.create_task(annoncer_mise_a_jour()),
                                CronTrigger(day_of_week='mon', hour=10, minute=32))
-
         _scheduler.start()
-        print("⏰ Scheduler démarré (journalières quotidiennes, hebdo le lundi).")
+        print("⏰ Scheduler démarré.")
 
 # ======================
 #  RUN
 # ======================
 if __name__ == "__main__":
-    if not DISCORD_TOKEN or not MONGO_URI or not QUESTS_CHANNEL_ID:
-        print("❌ DISCORD_TOKEN / MONGO_URI / QUESTS_CHANNEL_ID manquant(s).")
+    missing = []
+    if not DISCORD_TOKEN:      missing.append("DISCORD_TOKEN")
+    if not MONGO_URI:          missing.append("MONGO_URI")
+    if not QUESTS_CHANNEL_ID:  missing.append("QUESTS_CHANNEL_ID")
+    if missing:
+        raise RuntimeError(f"Variables manquantes: {', '.join(missing)}")
     bot.run(DISCORD_TOKEN)
