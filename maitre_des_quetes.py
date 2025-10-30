@@ -356,6 +356,110 @@ async def hebdo(ctx):
     await poster_hebdo()
     await ctx.reply("✅ Hebdomadaires postées.", allowed_mentions=NO_MENTIONS)
 
+# ======================
+#  COMMANDES TEST
+# ======================
+
+@bot.command(name="tester_quete")
+@commands.has_permissions(administrator=True)
+async def tester_quete(ctx, quest_id: str, channel: discord.TextChannel = None):
+    """Poste une quête précise avec le bouton Accepter, sans toucher à la rotation."""
+    quest_id = (quest_id or "").upper().strip()
+    quete = charger_quete_par_id(quest_id)
+    if not quete:
+        await ctx.reply(f"Je ne trouve pas la quête `{quest_id}`.", allowed_mentions=NO_MENTIONS)
+        return
+
+    categorie = categorie_par_id(quest_id)
+    target = channel or ctx.channel
+    await envoyer_quete(target, quete, categorie)
+    await ctx.reply(f"✅ Quête **{quest_id}** postée pour test dans {target.mention}.", allowed_mentions=NO_MENTIONS)
+
+
+@bot.command(name="forcer_accept")
+@commands.has_permissions(administrator=True)
+async def forcer_accept(ctx, quest_id: str, membre: discord.Member = None):
+    """
+    Simule l'acceptation d'une quête : envoie le MP d'instructions et,
+    pour les Interactions, crée l'active_interaction (utilisé par le bot PNJ).
+    """
+    quest_id = (quest_id or "").upper().strip()
+    quete = charger_quete_par_id(quest_id)
+    if not quete:
+        await ctx.reply(f"Je ne trouve pas la quête `{quest_id}`.", allowed_mentions=NO_MENTIONS)
+        return
+
+    categorie = categorie_par_id(quest_id)
+    user = membre or ctx.author
+    user_id = str(user.id)
+
+    # déjà acceptée ?
+    quete_data = accepted_collection.find_one({"_id": user_id}) or {}
+    if any(q.get("id") == quest_id for q in quete_data.get("quetes", [])):
+        await ctx.reply("Cette personne a déjà accepté cette quête.", allowed_mentions=NO_MENTIONS)
+        return
+
+    # déjà finie ? (sauf journalières)
+    if categorie != "Quêtes Journalières":
+        deja = completed_collection.find_one({"_id": user_id, "quetes": {"$elemMatch": {"id": quest_id}}})
+        if deja:
+            await ctx.reply("Cette personne a déjà terminé cette quête (non rejouable).", allowed_mentions=NO_MENTIONS)
+            return
+
+    # Enregistrer l'acceptation (comme le bouton)
+    accepted_collection.update_one(
+        {"_id": user_id},
+        {"$addToSet": {"quetes": {"categorie": categorie, "id": quest_id, "nom": quete["nom"]}},
+         "$set": {"pseudo": user.name}},
+        upsert=True
+    )
+
+    # État actif pour les Interactions (pour réveiller le PNJ)
+    if categorie == "Quêtes Interactions":
+        etat = {
+            "quest_id": quete["id"],
+            "type": quete.get("type", "interaction"),
+            "pnj": (quete.get("pnj") or "").strip(),
+            "current_step": 1 if quete.get("type") == "multi_step" else None,
+            "awaiting_reaction": False,
+            "emoji": None
+        }
+        user_state.update_one({"_id": user_id}, {"$set": {"active_interaction": etat}}, upsert=True)
+
+    # MP d’instructions identique au bouton
+    if categorie == "Quêtes Énigmes":
+        embed = discord.Embed(
+            title="🧩 Quête Énigmes",
+            description=f"**{quete['id']} – {quete['nom']}**",
+            color=COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
+        )
+        img = quete.get("image_url")
+        if img:
+            embed.add_field(name="💬 Rébus", value="Observe bien ce symbole...", inline=False)
+            embed.set_image(url=img)
+        else:
+            embed.add_field(name="💬 Énoncé", value=quete["enonce"], inline=False)
+        embed.add_field(name="👉 Objectif", value="Trouve la réponse et réponds-moi ici.", inline=False)
+        embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
+    else:
+        titre_embed = f"{EMOJI_PAR_CATEGORIE.get(categorie, '📜')} {categorie}"
+        embed = discord.Embed(
+            title=titre_embed,
+            description=f"**{quete['id']} – {quete['nom']}**",
+            color=COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
+        )
+        embed.add_field(name="💬 Description", value=quete["description"], inline=False)
+        embed.add_field(name="👉 Objectif", value=quete["details_mp"], inline=False)
+        embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
+
+    try:
+        await user.send(embed=embed)
+    except discord.Forbidden:
+        await ctx.reply("Je ne peux pas DM cette personne (MP fermés).", allowed_mentions=NO_MENTIONS)
+        return
+
+    await ctx.reply(f"✅ **{user.display_name}** a reçu la quête **{quest_id}** en DM.", allowed_mentions=NO_MENTIONS)
+
 @bot.command(name="show_quete")
 async def show_quete(ctx, quest_id: str = None):
     if not quest_id:
