@@ -122,64 +122,6 @@ def charger_quetes_groupes():
         if cat in groupes:
             groupes[cat].append(q)
     return groupes
-
-# ======================
-#  UTILS
-# ======================
-def normaliser(texte):
-    if not isinstance(texte, str):
-        return ""
-    texte = texte.lower().strip()
-    texte = unicodedata.normalize("NFKD", texte)
-    texte = "".join(c for c in texte if not unicodedata.combining(c))
-    texte = texte.replace("’", "'")
-    texte = re.sub(r'[“”«»]', '"', texte)
-    texte = re.sub(r"\s+", " ", texte)
-    texte = texte.replace("\u200b", "")
-    return texte
-
-async def purger_messages_categorie(channel: discord.TextChannel, categorie: str, limit=100):
-    prefix = EMOJI_PAR_CATEGORIE.get(categorie, "")
-    async for message in channel.history(limit=limit):
-        if message.author == bot.user and message.embeds:
-            title = message.embeds[0].title or ""
-            if title.startswith(prefix):
-                try:
-                    await message.delete()
-                except:
-                    pass
-
-async def envoyer_quete(channel, quete, categorie):
-    emoji = EMOJI_PAR_CATEGORIE.get(categorie, "❓")
-    couleur = COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
-    titre = f"{emoji} {categorie}\n– {quete['id']} {quete['nom']}"
-    embed = discord.Embed(title=titre, description=quete.get("resume",""), color=couleur)
-
-    # ✅ mention discrète si multi-étapes
-    if quete.get("type") == "multi_step":
-        embed.add_field(name="🔁 Progression", value="Quête à plusieurs étapes", inline=False)
-
-    type_texte = f"{categorie} – {quete.get('recompense',0)} Lumes"
-    embed.add_field(name="📌 Type & Récompense", value=type_texte, inline=False)
-    embed.set_footer(text="Clique sur le bouton ci-dessous pour accepter la quête.")
-    await channel.send(embed=embed, view=VueAcceptation(quete, categorie))
-
-def get_quete_non_postee(categorie, quetes_possibles):
-    doc = rotation_collection.find_one({"_id": categorie})
-    deja_postees = doc["postees"] if doc else []
-    restantes = [q for q in quetes_possibles if q["id"] not in deja_postees]
-    if not restantes:
-        restantes = quetes_possibles
-        deja_postees = []
-    quete = choice(restantes)
-    rotation_collection.update_one(
-        {"_id": categorie},
-        {"$set": {"postees": deja_postees + [quete["id"]]}},
-        upsert=True
-    )
-    return quete
-
-
 # ====================== 
 # VUE BOUTON "ACCEPTER" 
 # ======================
@@ -314,7 +256,61 @@ async def accepter(self, interaction: discord.Interaction, button: discord.ui.Bu
         )
     except discord.Forbidden:
         await interaction.response.send_message("Je n'arrive pas à t'envoyer de MP 😅", ephemeral=True)
+# ======================
+#  UTILS
+# ======================
+def normaliser(texte):
+    if not isinstance(texte, str):
+        return ""
+    texte = texte.lower().strip()
+    texte = unicodedata.normalize("NFKD", texte)
+    texte = "".join(c for c in texte if not unicodedata.combining(c))
+    texte = texte.replace("’", "'")
+    texte = re.sub(r'[“”«»]', '"', texte)
+    texte = re.sub(r"\s+", " ", texte)
+    texte = texte.replace("\u200b", "")
+    return texte
 
+async def purger_messages_categorie(channel: discord.TextChannel, categorie: str, limit=100):
+    prefix = EMOJI_PAR_CATEGORIE.get(categorie, "")
+    async for message in channel.history(limit=limit):
+        if message.author == bot.user and message.embeds:
+            title = message.embeds[0].title or ""
+            if title.startswith(prefix):
+                try:
+                    await message.delete()
+                except:
+                    pass
+
+async def envoyer_quete(channel, quete, categorie):
+    emoji = EMOJI_PAR_CATEGORIE.get(categorie, "❓")
+    couleur = COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
+    titre = f"{emoji} {categorie}\n– {quete['id']} {quete['nom']}"
+    embed = discord.Embed(title=titre, description=quete.get("resume",""), color=couleur)
+
+    # ✅ mention discrète si multi-étapes
+    if quete.get("type") == "multi_step":
+        embed.add_field(name="🔁 Progression", value="Quête à plusieurs étapes", inline=False)
+
+    type_texte = f"{categorie} – {quete.get('recompense',0)} Lumes"
+    embed.add_field(name="📌 Type & Récompense", value=type_texte, inline=False)
+    embed.set_footer(text="Clique sur le bouton ci-dessous pour accepter la quête.")
+    await channel.send(embed=embed, view=VueAcceptation(quete, categorie))
+
+def get_quete_non_postee(categorie, quetes_possibles):
+    doc = rotation_collection.find_one({"_id": categorie})
+    deja_postees = doc["postees"] if doc else []
+    restantes = [q for q in quetes_possibles if q["id"] not in deja_postees]
+    if not restantes:
+        restantes = quetes_possibles
+        deja_postees = []
+    quete = choice(restantes)
+    rotation_collection.update_one(
+        {"_id": categorie},
+        {"$set": {"postees": deja_postees + [quete["id"]]}},
+        upsert=True
+    )
+    return quete
 # ======================
 #  POSTERS
 # ======================
