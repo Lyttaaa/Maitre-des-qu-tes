@@ -89,15 +89,27 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 QUESTS_CHANNEL_ID = int(os.getenv("QUESTS_CHANNEL_ID", "0"))
 ANNOUNCE_CHANNEL_ID = int(os.getenv("ANNOUNCE_CHANNEL_ID", "0"))  # optionnel
 
-# --- Connexion MongoDB ---
+# --- MongoDB (safe with PyMongo) ---
+import os
 try:
-    mongo_client = MongoClient(MONGO_URI) if MONGO_URI else None
-    db = mongo_client.lumharel_bot if mongo_client is not None else None
-    user_state = db.user_state if db is not None else None
+    from pymongo import MongoClient
+except ImportError:
+    MongoClient = None
 
-    if db is None:
-        log.warning("⚠️ MONGO_URI défini mais DB non accessible (vér
+MONGO_URI = os.getenv("MONGO_URI")
 
+if MongoClient is None or not MONGO_URI:
+    raise RuntimeError("MONGO_URI (et pymongo) sont requis pour le Maître des Quêtes.")
+
+mongo_client = MongoClient(MONGO_URI)
+db = mongo_client.get_database("lumharel_bot")  # nom utilisé côté PNJ aussi
+
+# ⚠️ Ne JAMAIS faire `if db:` avec PyMongo ; utiliser `is not None`
+accepted_collection   = db.quetes_acceptees
+completed_collection  = db.quetes_terminees
+utilisateurs          = db.utilisateurs
+rotation_collection   = db.rotation_quetes
+user_state            = db.user_state  # <-- nécessaire pour stocker active_interaction
 
 TZ_PARIS = pytz.timezone("Europe/Paris")
 
