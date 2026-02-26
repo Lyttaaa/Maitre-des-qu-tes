@@ -9,6 +9,8 @@ from discord.ext import commands
 from discord.ui import View
 from pymongo import MongoClient
 
+from fuzzywuzzy import fuzz
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 import pytz
@@ -119,6 +121,9 @@ COULEURS_PAR_CATEGORIE = {
 # ======================
 def ids_quetes(liste):
     return [q["id"] if isinstance(q, dict) else q for q in liste]
+
+def nettoyer_reponse(reponse):
+    return re.sub(r'\s+', ' ', reponse.strip().lower())
 
 def normaliser(texte):
     if not isinstance(texte, str):
@@ -556,8 +561,13 @@ async def on_message(message: discord.Message):
             if quete["id"] not in [q["id"] if isinstance(q, dict) else q for q in quetes_acceptees]:
                 continue
 
-            bonne = normaliser(quete.get("reponse_attendue", ""))
-            if normaliser(contenu) == bonne:
+            reponse = nettoyer_reponse(contenu)
+            #bonne = normaliser(quete.get("reponse_attendue", ""))
+            bonne = nettoyer_reponse(quete.get("reponse_attendue", ""))
+            similarite = fuzz.partial_ratio(bonne, reponse)
+            
+            #if normaliser(contenu) == bonne:
+            if similarite > 80:
                 accepted_collection.update_one({"_id": user_id}, {"$pull": {"quetes": {"id": quete["id"]}}})
                 completed_collection.update_one(
                     {"_id": user_id},
