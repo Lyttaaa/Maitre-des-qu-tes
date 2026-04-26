@@ -483,7 +483,6 @@ async def bourse(interaction: discord.Interaction):
         user = utilisateurs.find_one({"_id": user_id}) or {}
     await interaction.response.send_message(
         f"💰 {interaction.user.mention}, tu possèdes **{user.get('lumes', 0)} Lumes**.",
-        ephemeral=True
     )
 
 NO_MENTIONS = discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=False)
