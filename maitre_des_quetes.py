@@ -5,6 +5,7 @@ import unicodedata
 from random import choice
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 from discord.ui import View
 from pymongo import MongoClient
@@ -88,6 +89,7 @@ MONGO_URI = os.getenv("MONGO_URI")
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 QUESTS_CHANNEL_ID = int(os.getenv("QUESTS_CHANNEL_ID", "0"))
 ANNOUNCE_CHANNEL_ID = int(os.getenv("ANNOUNCE_CHANNEL_ID", "0"))  # optionnel
+OWNER_ID = int(os.getenv("OWNER_ID", "0"))  # Ton ID Discord, à mettre dans le .env
 
 client = MongoClient(MONGO_URI)
 db = client.lumharel_bot
@@ -200,7 +202,7 @@ class VueAcceptation(View):
         quete_data = accepted_collection.find_one({"_id": user_id})
         if quete_data and any(q.get("id") == quete_id for q in quete_data.get("quetes", [])):
             await interaction.response.send_message(
-                "Tu as déjà accepté cette quête ! Consulte `!mes_quetes`.",
+                "Tu as déjà accepté cette quête ! Consulte `/mes_quetes`.",
                 ephemeral=True
             )
             return
@@ -213,7 +215,7 @@ class VueAcceptation(View):
             try:
                 await interaction.user.send(
                     f"📪 Tu as déjà terminé **{self.quete['nom']}** (non rejouable). "
-                    "Consulte `!mes_quetes`."
+                    "Consulte `/mes_quetes`."
                 )
             except discord.Forbidden:
                 await interaction.response.send_message(
@@ -268,7 +270,7 @@ class VueAcceptation(View):
         try:
             await interaction.user.send(embed=embed)
             await interaction.response.send_message(
-                "Quête acceptée ✅ Regarde tes MP ! (`!mes_quetes` pour le suivi)",
+                "Quête acceptée ✅ Regarde tes MP ! (`/mes_quetes` pour le suivi)",
                 ephemeral=True
             )
         except discord.Forbidden:
@@ -332,32 +334,57 @@ async def annoncer_mise_a_jour():
         )
 
 # ======================
-#  COMMANDES
+#  COMMANDES SLASH
 # ======================
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def poster_quetes(ctx):
-    """Poste tout d’un coup (journalières + hebdo) — commande admin."""
+def est_lyna(interaction: discord.Interaction) -> bool:
+    """Vérifie que la commande est utilisée par la propriétaire du bot."""
+    return OWNER_ID != 0 and interaction.user.id == OWNER_ID
+
+async def refuser_si_pas_lyna(interaction: discord.Interaction) -> bool:
+    """Renvoie True si la commande doit être bloquée."""
+    if est_lyna(interaction):
+        return False
+    await interaction.response.send_message(
+        "⛔ Tu n’as pas accès à cette commande.",
+        ephemeral=True
+    )
+    return True
+
+@bot.tree.command(name="poster_quetes", description="Poster toutes les quêtes journalières et hebdomadaires")
+async def poster_quetes(interaction: discord.Interaction):
+    """Poste tout d’un coup (journalières + hebdo) — réservé à Lyna."""
+    if await refuser_si_pas_lyna(interaction):
+        return
+
+    await interaction.response.defer(ephemeral=True)
     await poster_journalieres()
     await poster_hebdo()
     await annoncer_mise_a_jour()
-    await ctx.reply("✅ Quêtes postées (journalières + hebdo).")
+    await interaction.followup.send("✅ Quêtes postées (journalières + hebdo).", ephemeral=True)
 
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def journaliere(ctx):
+@bot.tree.command(name="journaliere", description="Poster les quêtes journalières")
+async def journaliere(interaction: discord.Interaction):
+    """Poste les journalières — réservé à Lyna."""
+    if await refuser_si_pas_lyna(interaction):
+        return
+
+    await interaction.response.defer(ephemeral=True)
     await poster_journalieres()
-    await ctx.reply("✅ Journalières postées.")
+    await interaction.followup.send("✅ Journalières postées.", ephemeral=True)
 
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def hebdo(ctx):
+@bot.tree.command(name="hebdo", description="Poster les quêtes hebdomadaires")
+async def hebdo(interaction: discord.Interaction):
+    """Poste les hebdomadaires — réservé à Lyna."""
+    if await refuser_si_pas_lyna(interaction):
+        return
+
+    await interaction.response.defer(ephemeral=True)
     await poster_hebdo()
-    await ctx.reply("✅ Hebdomadaires postées.")
+    await interaction.followup.send("✅ Hebdomadaires postées.", ephemeral=True)
 
-@bot.command()
-async def mes_quetes(ctx):
-    user_id = str(ctx.author.id)
+@bot.tree.command(name="mes_quetes", description="Voir tes quêtes en cours et terminées")
+async def mes_quetes(interaction: discord.Interaction):
+    user_id = str(interaction.user.id)
     toutes_quetes = [q for lst in charger_quetes().values() for q in lst]
 
     user_accept = accepted_collection.find_one({"_id": user_id}) or {}
@@ -387,7 +414,7 @@ async def mes_quetes(ctx):
             categories[cat]["encours"].append(ligne)
 
     embed = discord.Embed(
-        title=f"📘 Quêtes de {ctx.author.display_name}",
+        title=f"📘 Quêtes de {interaction.user.display_name}",
         color=0xA86E2A
     )
     desc = "📜 **Quêtes en cours**\n"
@@ -401,42 +428,44 @@ async def mes_quetes(ctx):
         desc += "\n".join(data["terminees"]) + "\n" if data["terminees"] else "*Aucune*\n"
 
     embed.description = desc
-    await ctx.send(embed=embed)
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
-@bot.command()
-async def bourse(ctx):
-    user_id = str(ctx.author.id)
+@bot.tree.command(name="bourse", description="Voir combien de Lumes tu possèdes")
+async def bourse(interaction: discord.Interaction):
+    user_id = str(interaction.user.id)
     user = utilisateurs.find_one({"_id": user_id})
     if not user:
         utilisateurs.insert_one({
             "_id": user_id,
-            "pseudo": ctx.author.name,
+            "pseudo": interaction.user.name,
             "lumes": 0,
             "derniere_offrande": {},
             "roles_temporaires": {},
         })
         user = utilisateurs.find_one({"_id": user_id}) or {}
-    await ctx.send(f"💰 {ctx.author.mention}, tu possèdes **{user.get('lumes', 0)} Lumes**.")
-
-import discord
-from discord.ext import commands
+    await interaction.response.send_message(
+        f"💰 {interaction.user.mention}, tu possèdes **{user.get('lumes', 0)} Lumes**.",
+        ephemeral=True
+    )
 
 NO_MENTIONS = discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=False)
 
-@bot.command(name="show_quete")
-async def show_quete(ctx, quest_id: str = None):
-    """
-    Usage: !show_quete QE012   (ou QI019 / QR003)
-    """
-    if quest_id is None:
-        await ctx.send("Usage : `!show_quete <ID>` (ex: `!show_quete QE012`)", allowed_mentions=NO_MENTIONS)
+@bot.tree.command(name="show_quete", description="Afficher l’aperçu d’une quête")
+@app_commands.describe(quest_id="ID de la quête, ex : QE012, QI019 ou QR003")
+async def show_quete(interaction: discord.Interaction, quest_id: str):
+    """Affiche une quête en aperçu — réservé à Lyna."""
+    if await refuser_si_pas_lyna(interaction):
         return
 
     quest_id = quest_id.strip().upper()
 
     quete = charger_quete_par_id(quest_id)
     if not quete:
-        await ctx.send(f"Je ne trouve pas la quête `{quest_id}`.", allowed_mentions=NO_MENTIONS)
+        await interaction.response.send_message(
+            f"Je ne trouve pas la quête `{quest_id}`.",
+            ephemeral=True,
+            allowed_mentions=NO_MENTIONS
+        )
         return
 
     categorie = categorie_par_id(quest_id)
@@ -455,7 +484,7 @@ async def show_quete(ctx, quest_id: str = None):
         else:
             embed.add_field(name="💬 Énoncé", value=quete["enonce"], inline=False)
 
-        embed.add_field(name="👉 Objectif", value="Tro uve la réponse et réponds-moi ici.", inline=False)
+        embed.add_field(name="👉 Objectif", value="Trouve la réponse et réponds-moi ici.", inline=False)
         embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
 
     elif categorie == "Quêtes Recherches":
@@ -468,7 +497,7 @@ async def show_quete(ctx, quest_id: str = None):
         embed.add_field(name="👉 Objectif", value=quete["details_mp"], inline=False)
         embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
 
-    else:  # Interactions
+    else:  # Interactions / Journalières / autres catégories
         embed = discord.Embed(
             title=f"🤝 {categorie} (APERÇU)",
             description=f"**{quete['id']} – {quete['nom']}**",
@@ -478,8 +507,7 @@ async def show_quete(ctx, quest_id: str = None):
         embed.add_field(name="👉 Objectif", value=quete["details_mp"], inline=False)
         embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
 
-    await ctx.send(embed=embed, allowed_mentions=NO_MENTIONS)
-
+    await interaction.response.send_message(embed=embed, ephemeral=True, allowed_mentions=NO_MENTIONS)
 
 # ======================
 #  EVENTS: COMPLETION
@@ -582,11 +610,20 @@ async def on_message(message: discord.Message):
 #  SCHEDULER
 # ======================
 _scheduler = None
+_commands_synced = False
 
 @bot.event
 async def on_ready():
-    global _scheduler
+    global _scheduler, _commands_synced
     print(f"✅ Bot prêt : {bot.user}")
+
+    if not _commands_synced:
+        try:
+            synced = await bot.tree.sync()
+            print(f"✅ Slash commands synchronisées : {[cmd.name for cmd in synced]}")
+            _commands_synced = True
+        except Exception as e:
+            print(f"❌ Erreur sync slash commands : {e}")
 
     if _scheduler is None:
         _scheduler = AsyncIOScheduler(timezone=TZ_PARIS)
