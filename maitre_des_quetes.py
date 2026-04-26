@@ -134,6 +134,43 @@ def normaliser(texte):
     texte = texte.replace("\u200b", "")
     return texte
 
+def texte_embed(valeur, fallback="Non précisé."):
+    """Convertit une valeur en texte sûr pour Discord."""
+    if valeur is None:
+        return fallback
+    texte = str(valeur).strip()
+    return texte if texte else fallback
+
+
+def couper_texte(texte, limite=1024):
+    """Coupe un texte en morceaux compatibles avec les champs d'embed Discord."""
+    texte = texte_embed(texte)
+    if len(texte) <= limite:
+        return [texte]
+
+    morceaux = []
+    restant = texte
+    while len(restant) > limite:
+        coupe = restant.rfind("\n", 0, limite)
+        if coupe == -1:
+            coupe = restant.rfind(" ", 0, limite)
+        if coupe == -1 or coupe < limite * 0.5:
+            coupe = limite
+        morceaux.append(restant[:coupe].strip())
+        restant = restant[coupe:].strip()
+
+    if restant:
+        morceaux.append(restant)
+    return morceaux
+
+
+def ajouter_champ_long(embed: discord.Embed, nom: str, valeur, inline=False):
+    """Ajoute un champ d'embed en le découpant si son contenu dépasse 1024 caractères."""
+    morceaux = couper_texte(valeur, 1024)
+    for i, morceau in enumerate(morceaux):
+        nom_champ = nom if i == 0 else f"{nom} (suite {i})"
+        embed.add_field(name=nom_champ[:256], value=morceau, inline=inline)
+
 def charger_quetes():
     with open("quetes.json", "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -163,7 +200,7 @@ async def envoyer_quete(channel, quete, categorie):
     couleur = COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
     titre = f"{emoji} {categorie}\n– {quete['id']} {quete['nom']}"
 
-    embed = discord.Embed(title=titre, description=quete["resume"], color=couleur)
+    embed = discord.Embed(title=titre, description=texte_embed(quete.get("resume"), "Aucun résumé.")[:4096], color=couleur)
     type_texte = f"{categorie} – {quete['recompense']} Lumes"
     embed.add_field(name="📌 Type & Récompense", value=type_texte, inline=False)
     embed.set_footer(text="Clique sur le bouton ci-dessous pour accepter la quête.")
@@ -212,16 +249,17 @@ class VueAcceptation(View):
             {"_id": user_id, "quetes": {"$elemMatch": {"id": quete_id}}}
         )
         if deja_faite and self.categorie != "Quêtes Journalières":
+            message = (
+                f"📪 Tu as déjà terminé **{self.quete['nom']}**. "
+                "Cette quête n’est pas rejouable. Consulte `/mes_quetes`."
+            )
             try:
-                await interaction.user.send(
-                    f"📪 Tu as déjà terminé **{self.quete['nom']}** (non rejouable). "
-                    "Consulte `/mes_quetes`."
-                )
+                await interaction.user.send(message)
             except discord.Forbidden:
-                await interaction.response.send_message(
-                    "Tu as déjà terminé cette quête (non rejouable), et je ne peux pas t’envoyer de MP.",
-                    ephemeral=True
-                )
+                pass
+
+            # Toujours répondre à l'interaction, sinon Discord affiche “Échec de l’interaction”.
+            await interaction.response.send_message(message, ephemeral=True)
             return
 
         accepted_collection.update_one(
@@ -252,7 +290,7 @@ class VueAcceptation(View):
                 embed.set_image(url=img)
             else:
                 # Sinon on affiche le texte d’énigme classique
-                embed.add_field(name="💬 Énoncé", value=self.quete["enonce"], inline=False)
+                ajouter_champ_long(embed, "💬 Énoncé", self.quete.get("enonce", "Aucun énoncé."), inline=False)
 
             embed.add_field(name="👉 Objectif", value="Trouve la réponse et réponds-moi ici.", inline=False)
             embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
@@ -263,8 +301,8 @@ class VueAcceptation(View):
                 description=f"**{self.quete['id']} – {self.quete['nom']}**",
                 color=COULEURS_PAR_CATEGORIE.get(self.categorie, 0xCCCCCC)
             )
-            embed.add_field(name="💬 Description", value=self.quete["description"], inline=False)
-            embed.add_field(name="👉 Objectif", value=self.quete["details_mp"], inline=False)
+            ajouter_champ_long(embed, "💬 Description", self.quete.get("description", "Aucune description."), inline=False)
+            ajouter_champ_long(embed, "👉 Objectif", self.quete.get("details_mp", "Aucun objectif précisé."), inline=False)
             embed.set_footer(text=f"🏅 Récompense : {self.quete['recompense']} Lumes")
 
         try:
@@ -482,7 +520,7 @@ async def show_quete(interaction: discord.Interaction, quest_id: str):
             embed.add_field(name="💬 Rébus", value="Observe bien ce symbole...", inline=False)
             embed.set_image(url=img)
         else:
-            embed.add_field(name="💬 Énoncé", value=quete["enonce"], inline=False)
+            ajouter_champ_long(embed, "💬 Énoncé", quete.get("enonce", "Aucun énoncé."), inline=False)
 
         embed.add_field(name="👉 Objectif", value="Trouve la réponse et réponds-moi ici.", inline=False)
         embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
@@ -493,8 +531,8 @@ async def show_quete(interaction: discord.Interaction, quest_id: str):
             description=f"**{quete['id']} – {quete['nom']}**",
             color=COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
         )
-        embed.add_field(name="💬 Indice", value=quete["description"], inline=False)
-        embed.add_field(name="👉 Objectif", value=quete["details_mp"], inline=False)
+        ajouter_champ_long(embed, "💬 Indice", quete.get("description", "Aucun indice."), inline=False)
+        ajouter_champ_long(embed, "👉 Objectif", quete.get("details_mp", "Aucun objectif précisé."), inline=False)
         embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
 
     else:  # Interactions / Journalières / autres catégories
@@ -503,8 +541,8 @@ async def show_quete(interaction: discord.Interaction, quest_id: str):
             description=f"**{quete['id']} – {quete['nom']}**",
             color=COULEURS_PAR_CATEGORIE.get(categorie, 0xCCCCCC)
         )
-        embed.add_field(name="💬 Description", value=quete["description"], inline=False)
-        embed.add_field(name="👉 Objectif", value=quete["details_mp"], inline=False)
+        ajouter_champ_long(embed, "💬 Description", quete.get("description", "Aucune description."), inline=False)
+        ajouter_champ_long(embed, "👉 Objectif", quete.get("details_mp", "Aucun objectif précisé."), inline=False)
         embed.set_footer(text=f"🏅 Récompense : {quete['recompense']} Lumes")
 
     await interaction.response.send_message(embed=embed, ephemeral=True, allowed_mentions=NO_MENTIONS)
