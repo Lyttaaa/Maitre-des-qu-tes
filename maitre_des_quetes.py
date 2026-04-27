@@ -274,7 +274,7 @@ class VueAcceptation(View):
             upsert=True
         )
 
-        # MP d’instructions
+        # MP d’instruction
         if self.categorie == "Quêtes Énigmes":
             embed = discord.Embed(
                 title="🧩 Quête Énigmes",
