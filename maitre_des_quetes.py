@@ -466,7 +466,7 @@ async def mes_quetes(interaction: discord.Interaction):
         desc += "\n".join(data["terminees"]) + "\n" if data["terminees"] else "*Aucune*\n"
 
     embed.description = desc
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    await interaction.response.send_message(embed=embed)
 
 @bot.tree.command(name="bourse", description="Voir combien de Lumes tu possèdes")
 async def bourse(interaction: discord.Interaction):
@@ -483,7 +483,6 @@ async def bourse(interaction: discord.Interaction):
         user = utilisateurs.find_one({"_id": user_id}) or {}
     await interaction.response.send_message(
         f"💰 {interaction.user.mention}, tu possèdes **{user.get('lumes', 0)} Lumes**.",
-        ephemeral=True
     )
 
 NO_MENTIONS = discord.AllowedMentions(everyone=False, users=True, roles=False, replied_user=False)
