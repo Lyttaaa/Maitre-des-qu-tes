@@ -666,14 +666,14 @@ async def on_ready():
         _scheduler = AsyncIOScheduler(timezone=TZ_PARIS)
         # Tous les jours 10:30 → journalières
         _scheduler.add_job(lambda: bot.loop.create_task(poster_journalieres()),
-                           CronTrigger(hour=00, minute=01))
+                           CronTrigger(hour=0, minute=1))
         # Chaque lundi 10:31 → hebdo (décalé d’1 min pour éviter concurrence)
         _scheduler.add_job(lambda: bot.loop.create_task(poster_hebdo()),
-                           CronTrigger(day_of_week='mon', hour=00, minute=01))
+                           CronTrigger(day_of_week='mon', hour=0, minute=1))
         # Annonce après chaque post hebdo
         if ANNOUNCE_CHANNEL_ID:
             _scheduler.add_job(lambda: bot.loop.create_task(annoncer_mise_a_jour()),
-                               CronTrigger(day_of_week='mon', hour=00, minute=02))
+                               CronTrigger(day_of_week='mon', hour=0, minute=2))
 
         _scheduler.start()
         print("⏰ Scheduler démarré (journalières quotidiennes, hebdo le lundi).")
